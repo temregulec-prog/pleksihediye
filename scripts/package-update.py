@@ -42,6 +42,10 @@ XML otomatik alan bulma, kayitli kaynak duzenleme ve HTTPS yonlendirme destegi e
 XML kaynaklari ve gorseller HTTP / HTTPS ile alinabilir.
 Tarayicidan kopyalanan Turkce XML icin urun_adi, fiyat, gorsel alanlari otomatik bulunur.
 Ayni tedarikcinin HTTPS gorsellerini HTTP ile alma secenegi eklenmistir.
+XML aktariminda hata ayrintisi ve onizlemeyi koruyarak yeniden deneme eklendi.
+Gorselleri atlama ve yalnizca urun bilgilerini aktarma acik seceneklerdir.
+Ana sayfa gorselleri yuklenirken otomatik sikistirilir.
+Mevcut gorseller Ana sayfa > Mevcut gorseli sikistir ile donusturulup yayinlanabilir.
 Cikis yap dugmesi de bu pakete dahildir.
 '''
 out = root / 'dagitim/pleksihediye-php82-guncelleme.zip'

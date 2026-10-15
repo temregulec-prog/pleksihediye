@@ -160,3 +160,24 @@ test('HTTP supplier sources are accepted and browser-copied Turkish XML previews
  const xml='This XML file does not appear to have any style information associated with it. The document tree is shown below.\n<urunler><urun><id>HTTP-001</id><urun_adi>İsim & Pleksi</urun_adi><aciklama><![CDATA[A & B]]></aciklama><fiyat>19.90</fiyat><gorsel>http://supplier.example/a.png</gorsel></urun></urunler>';
  r=await request('/admin/xml/preview',{cookie:adminCookie,method:'POST',body:{xml,autoDetect:true,commissionPercent:20}});assert.equal(r.status,200);assert.equal(r.body.products[0].name,'İsim & Pleksi');assert.equal(r.body.products[0].price,19.9);assert.equal(r.body.mapping.name,'urun_adi');
 });
+
+test('failed XML image reports its product and retains preview for a successful image-free retry',async()=>{
+ const xml='<products><product><id>retry-image-1</id><name>Görseli alınamayan test ürünü</name><price>300</price><image>http://127.0.0.1/private.png</image></product></products>';
+ let r=await request('/admin/xml/preview',{cookie:adminCookie,method:'POST',body:{xml}});const token=r.body.token;
+ r=await request('/admin/xml/import',{cookie:adminCookie,method:'POST',body:{token}});assert.equal(r.status,200);assert.equal(r.body.ok,false);assert.equal(r.body.stage,'images');assert.match(r.body.error,/retry-image-1.*Görsel alınamadı/);assert.equal(r.body.retryable,true);assert.equal(r.body.imported,0);
+ assert.ok(!(await request('/admin/products',{cookie:adminCookie})).body.some(p=>p.externalId==='retry-image-1'));
+ r=await request('/admin/xml/import',{cookie:adminCookie,method:'POST',body:{token,importImages:false}});assert.equal(r.body.ok,true);assert.equal(r.body.imported,1);assert.equal(r.body.imagesSkipped,true);
+ r=await request('/admin/xml/import',{cookie:adminCookie,method:'POST',body:{token,importImages:false}});assert.equal(r.status,400,'Successful preview cannot be replayed');
+});
+
+test('XML image skipping is explicit and reports warnings without hiding product data',async()=>{
+ const xml='<products><product><id>skip-image-1</id><name>Görsel uyarılı test ürünü</name><price>300</price><image>http://127.0.0.1/private.png</image></product><product><id>skip-image-2</id><name>İkinci test ürünü</name><price>450</price></product></products>';
+ let r=await request('/admin/xml/preview',{cookie:adminCookie,method:'POST',body:{xml}});r=await request('/admin/xml/import',{cookie:adminCookie,method:'POST',body:{token:r.body.token,skipFailedImages:true}});assert.equal(r.body.ok,true);assert.equal(r.body.imported,2);assert.equal(r.body.warnings.length,1);assert.match(r.body.warnings[0],/skip-image-1/);
+ const products=(await request('/admin/products',{cookie:adminCookie})).body.filter(p=>p.externalId?.startsWith('skip-image-'));assert.equal(products.length,2);assert.ok(products.every(p=>p.active===false));
+});
+
+test('all 97 Turkish XML product records can be imported without image networking',async()=>{
+ const xml='<urunler>'+Array.from({length:97},(_,n)=>'<urun><id>batch-'+n+'</id><urun_adi>Toplu ürün '+n+'</urun_adi><fiyat>19.90</fiyat><gorsel>https://supplier.example/image.png</gorsel></urun>').join('')+'</urunler>';
+ let r=await request('/admin/xml/preview',{cookie:adminCookie,method:'POST',body:{xml,autoDetect:true}});assert.equal(r.body.products.length,97);r=await request('/admin/xml/import',{cookie:adminCookie,method:'POST',body:{token:r.body.token,importImages:false}});assert.equal(r.body.ok,true);assert.equal(r.body.imported,97);
+ const products=(await request('/admin/products',{cookie:adminCookie})).body.filter(p=>p.externalId?.startsWith('batch-'));assert.equal(products.length,97);assert.ok(products.every(p=>p.images.length===0&&p.price===19.9&&p.active===false));
+});
