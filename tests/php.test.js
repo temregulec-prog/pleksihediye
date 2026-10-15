@@ -200,3 +200,16 @@ test('categories support admin creation, automatic XML discovery and safe deleti
  r=await request('/admin/categories',{cookie:adminCookie,method:'DELETE',body:{name:'Yeni Özel Kategori'}});assert.equal(r.status,200);assert.ok(!(await request('/categories')).body.includes('Yeni Özel Kategori'));
  r=await request('/admin/categories',{cookie:adminCookie,method:'DELETE',body:{name:'Genel'}});assert.equal(r.status,400);
 });
+
+test('spreadsheet import is admin-only, idempotent, hidden from home and preserves publication on retry',async()=>{
+ const form=new FormData();form.append('image',new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aV1cAAAAASUVORK5CYII=','base64')],{type:'image/png'}),'excel.png');const upload=await fetch(base+'/api.php?route=/uploads',{method:'POST',headers:{Cookie:adminCookie},body:form});assert.equal(upload.status,201);const adminImage=(await upload.json()).id;
+ const product={name:'Excel aktarım test ürünü',description:'',category:'Excel Kategori',price:19.9,commissionPercent:20,requireText:true,requireImage:true,images:[adminImage],showOnHome:false,importIdentity:'https://supplier.example/product/123'};
+ let r=await request('/admin/products/spreadsheet',{cookie:dealerCookie,method:'POST',body:{products:[product]}});assert.equal(r.status,403);
+ r=await request('/admin/products/spreadsheet',{cookie:adminCookie,method:'POST',body:{products:[product]}});assert.equal(r.status,200);assert.equal(r.body.imported,1);
+ let ps=(await request('/admin/products',{cookie:adminCookie})).body;let p=ps.find(p=>p.name===product.name);assert.ok(p);assert.equal(p.active,false);assert.equal(p.showOnHome,false);assert.equal(p.price,19.9);assert.equal(p.dealerPrice,15.92);
+ r=await request('/admin/products/bulk',{cookie:adminCookie,method:'PATCH',body:{products:[{id:p.id,active:true}]}});assert.equal(r.status,200);
+ r=await request('/admin/products/spreadsheet',{cookie:adminCookie,method:'POST',body:{products:[{...product,price:29.9}]}});assert.equal(r.status,200);
+ ps=(await request('/admin/products',{cookie:adminCookie})).body;assert.equal(ps.filter(x=>x.name===product.name).length,1);p=ps.find(x=>x.id===p.id);assert.equal(p.active,true);assert.equal(p.price,29.9);assert.equal(p.showOnHome,false);
+ const before=ps.length;r=await request('/admin/products/spreadsheet',{cookie:adminCookie,method:'POST',body:{products:[{...product,importIdentity:'new-valid'},{...product,importIdentity:'invalid',price:-1}]}});assert.equal(r.status,400);assert.equal((await request('/admin/products',{cookie:adminCookie})).body.length,before,'Invalid group must not partially insert');
+ r=await request('/admin/products/bulk',{cookie:adminCookie,method:'PATCH',body:{products:[{id:p.id,showOnHome:true}]}});assert.equal(r.status,200);assert.equal((await request('/products')).body.find(x=>x.id===p.id).showOnHome,true);
+});

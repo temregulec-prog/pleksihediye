@@ -8,7 +8,7 @@ import stat
 root = Path(__file__).resolve().parent.parent
 hosting = root / 'hosting'
 html = (hosting / 'app/frontend.html').read_text()
-assets = sorted(set(re.findall(r'/assets/([^"\s]+)', html)))
+assets = sorted(p.name for p in (hosting / 'assets').iterdir() if p.suffix in {'.js', '.css'})
 assert assets, 'Arayüz dosyaları bulunamadı'
 files = ['index.php', 'api.php', 'app/core.php', 'app/bootstrap.php', 'app/homepage.php', 'app/homepage-schema.json', 'app/accounts.php', 'app/orders.php', 'app/products.php', 'app/xml.php', 'app/frontend.html'] + ['assets/' + name for name in assets]
 notes = '''PLEKSI HEDIYE - UYGULAMA GUNCELLEMESI
@@ -49,6 +49,10 @@ Mevcut gorseller Ana sayfa > Mevcut gorseli sikistir ile donusturulup yayinlanab
 Kategoriler artik dinamiktir; XML urunlerinin kategorileri otomatik gosterilir.
 Yonetim > Urun yonetimi > Kategorileri yonet ile kategori eklenir/silinir.
 Silinen kategorinin urunleri Genel kategorisine tasinir.
+Pasif / yayinda urun filtresi ve filtrelenen urunleri topluca yayinlama eklendi.
+Excel ve ZIP aktarimi Urun yonetimi ekranindadir; alt klasor gorselleri eslestirilir.
+Excel urunleri varsayilan olarak ana sayfada gizlenir, kategorilerinde gorunur.
+Aktarimda fiyat perakende fiyatidir, yeni urunler pasif kaydedilir.
 Cikis yap dugmesi de bu pakete dahildir.
 '''
 out = root / 'dagitim/pleksihediye-php82-guncelleme.zip'
