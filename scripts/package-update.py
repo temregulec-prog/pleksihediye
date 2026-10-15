@@ -18,7 +18,9 @@ app/frontend.html ve assets icindeki dosyalarin uzerine yazilmasina izin verin.
 Yeniden kurulum yapmayin. install.php calistirmayin.
 Bu paket veritabani, siparisler, uyeler ve app/config.php ayarlarini degistirmez.
 Yukledikten sonra sayfayi yenileyin. Gerekirse Ctrl+F5 kullanin.
-Yonetim panelinin ust kisminda Cikis yap dugmesi gorunecektir.
+Yonetim paneli acilisinda gereksiz istekler kaldirilmistir.
+Gecici baglanti sorunlarinda veri okuma bir kez daha denenir.
+Cikis yap dugmesi de bu pakete dahildir.
 '''
 out = root / 'dagitim/pleksihediye-php82-guncelleme.zip'
 out.parent.mkdir(exist_ok=True)
