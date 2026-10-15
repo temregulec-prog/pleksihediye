@@ -8,7 +8,7 @@ export async function requestApi(path,options={}){
   const timer=setTimeout(()=>controller.abort(),20000);
   let response,data;
   try{
-   response=await fetch(apiUrl(path),{...options,cache:'no-store',credentials:'same-origin',signal:options.signal||controller.signal,headers:{'Content-Type':'application/json',...options.headers},body:options.body?JSON.stringify(options.body):undefined});
+   response=await fetch(apiUrl(path),{...options,cache:'no-store',credentials:'same-origin',signal:options.signal||controller.signal,headers:{Accept:'application/json',...(method!=='GET'?{'Content-Type':'application/json'}:{}),...options.headers},body:options.body?JSON.stringify(options.body):undefined});
    try{data=await response.json()}catch{
     if(!response.ok){
      if(response.status===409&&path==='/auth/register')throw Error('Bu telefon numarasıyla zaten bir üyelik veya başvuru var. Başvurunuz onay bekliyor olabilir.');

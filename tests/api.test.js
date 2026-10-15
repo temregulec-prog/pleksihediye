@@ -5,7 +5,7 @@ const {requestApi}=await import('../src/api.js');
 
 test('read recovers from one network failure and uses installation subfolder',async t=>{
  let calls=0;
- t.mock.method(globalThis,'fetch',async (url,options)=>{assert.equal(options.cache,'no-store');assert.equal(url,'/yeni/api.php?route=%2Fproducts');if(++calls===1)throw new TypeError('NetworkError');return Response.json([{id:1}])});
+ t.mock.method(globalThis,'fetch',async (url,options)=>{assert.equal(options.cache,'no-store');assert.equal(options.headers['Content-Type'],undefined);assert.equal(options.headers.Accept,'application/json');assert.equal(url,'/yeni/api.php?route=%2Fproducts');if(++calls===1)throw new TypeError('NetworkError');return Response.json([{id:1}])});
  assert.deepEqual(await requestApi('/products'),[{id:1}]);assert.equal(calls,2);
 });
 test('failed writes are never replayed',async t=>{
