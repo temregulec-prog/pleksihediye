@@ -101,3 +101,14 @@ test('administrator personal orders exclude workshop orders while management ret
  r=await request('/api/orders',{cookie:adminCookie});assert.equal(r.status,200);assert.ok(r.body.some(o=>!ownIds.includes(o.id)),'Management still sees other dealers');
  r=await request('/api/orders?mine=1&user_id='+dealerId,{cookie:adminCookie});assert.deepEqual(r.body.map(o=>o.id),ownIds,'User ID cannot change personal scope');
 });
+
+test('logo settings publish only the administrator selected image and preserve original bytes',async()=>{
+ let r=await request('/api/admin/settings',{cookie:adminCookie,method:'PUT',body:{logoId:imageId}});assert.equal(r.status,400,'Cannot expose a dealer private upload as logo');
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aV1cAAAAASUVORK5CYII=','base64');const form=new FormData();form.append('image',new Blob([png],{type:'image/png'}),'logo.png');const upload=await fetch(base+'/api/uploads',{method:'POST',headers:{Cookie:adminCookie},body:form});assert.equal(upload.status,201);const id=(await upload.json()).id;
+ assert.equal((await fetch(base+'/api/uploads/'+id)).status,403);
+ r=await request('/api/admin/settings',{cookie:adminCookie,method:'PUT',body:{logoId:id}});assert.equal(r.status,200);
+ r=await request('/api/admin/settings',{cookie:adminCookie});assert.equal(r.body.logoId,id);
+ const image=await fetch(base+'/api/uploads/'+id);assert.equal(image.status,200);assert.deepEqual(Buffer.from(await image.arrayBuffer()),png);
+ const html=await(await fetch(base+'/')).text();assert.ok(html.includes('"logoId":"'+id+'"'));
+ r=await request('/api/admin/settings',{cookie:adminCookie,method:'PUT',body:{logoId:null}});assert.equal(r.status,200);assert.equal((await fetch(base+'/api/uploads/'+id)).status,403);
+});

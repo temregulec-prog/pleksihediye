@@ -10,11 +10,11 @@ hosting = root / 'hosting'
 html = (hosting / 'app/frontend.html').read_text()
 assets = sorted(set(re.findall(r'/assets/([^"\s]+)', html)))
 assert assets, 'Arayüz dosyaları bulunamadı'
-files = ['api.php', 'app/orders.php', 'app/frontend.html'] + ['assets/' + name for name in assets]
+files = ['index.php', 'api.php', 'app/core.php', 'app/accounts.php', 'app/orders.php', 'app/frontend.html'] + ['assets/' + name for name in assets]
 notes = '''PLEKSI HEDIYE - UYGULAMA GUNCELLEMESI
 
 ZIP dosyasini mevcut sitenin kurulu oldugu klasore cikarin.
-api.php, app/orders.php, app/frontend.html ve assets icindeki dosyalarin uzerine yazilmasina izin verin.
+Paketteki index.php, api.php, app/ ve assets/ dosyalarinin uzerine yazilmasina izin verin.
 Yeniden kurulum yapmayin. install.php calistirmayin.
 Bu paket veritabani, siparisler, uyeler ve app/config.php ayarlarini degistirmez.
 Yukledikten sonra sayfayi yenileyin. Gerekirse Ctrl+F5 kullanin.
@@ -31,6 +31,9 @@ Yonetim verileri ayri yuklenir; bir istegin hatasi digerlerini gizlemez.
 Yoneticinin kisisel siparisleri atolyenin tum siparislerinden ayrilmistir.
 Yonetim merkezine Profilim ekranindan girilir.
 app/orders.php dosyasi da mutlaka uzerine yazilmalidir.
+Magaza ayarlarinda onizlemeli logo yukleme alani vardir.
+Logoyu bu alandan secip Ayarlari kaydet dugmesine basin.
+Logo mobilde 150 px, bilgisayarda 220 px genislikte orani korunarak gosterilir.
 Cikis yap dugmesi de bu pakete dahildir.
 '''
 out = root / 'dagitim/pleksihediye-php82-guncelleme.zip'
