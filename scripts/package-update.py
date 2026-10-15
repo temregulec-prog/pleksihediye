@@ -22,6 +22,7 @@ Yonetim paneli acilisinda gereksiz istekler kaldirilmistir.
 Gecici baglanti sorunlarinda veri okuma bir kez daha denenir.
 Hesap ekrani veri isteklerini beklemeden acilir.
 Uyelik listesi, basvuru sayaci ve bildirim yukleme durumu guncellenmistir.
+Siparis duzenleme ekraninda urun fotograflari ve mevcut bilgiler gosterilir.
 Cikis yap dugmesi de bu pakete dahildir.
 '''
 out = root / 'dagitim/pleksihediye-php82-guncelleme.zip'
