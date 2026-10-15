@@ -91,3 +91,13 @@ await request('/api/admin/notifications/read-all',{cookie:adminCookie,method:'PO
 test('temporary-password expiry and membership deactivation invalidate access',async()=>{
 let r=await request('/api/admin/dealers',{cookie:adminCookie});const member=r.body.find(u=>u.phone==='905321110003');r=await request('/api/admin/dealers/'+member.id+'/reset-password',{cookie:adminCookie,method:'POST'});assert.equal(r.status,200);const temp=r.body.temporaryPassword;const db=new DatabaseSync(join(dir,'test.sqlite'));db.prepare('UPDATE users SET password_expires=? WHERE id=?').run(Date.now()-1000,member.id);db.close();r=await request('/api/auth/login',{method:'POST',body:{phone:member.phone,password:temp}});assert.equal(r.status,403);assert.match(r.body.error,/süresi/);r=await request('/api/orders',{cookie:otherCookie});assert.equal(r.status,401);
 });
+
+test('administrator personal orders exclude workshop orders while management retains all',async()=>{
+ const products=await request('/api/products',{cookie:adminCookie});const product=products.body.find(p=>!p.requireImage);assert.ok(product);
+ const payload={items:[{id:product.id,quantity:1,personalization:'Kişisel sipariş',color:'Krem'}],deliveryMethod:'pickup'};
+ let r=await request('/api/orders',{cookie:adminCookie,method:'POST',body:payload});assert.equal(r.status,201);const ownId=r.body.id;
+ r=await request('/api/orders?mine=1',{cookie:adminCookie});assert.equal(r.status,200);assert.ok(r.body.some(o=>o.id===ownId));assert.ok(r.body.every(o=>o.user_id===r.body.find(o=>o.id===ownId).user_id));
+ const ownIds=r.body.map(o=>o.id);
+ r=await request('/api/orders',{cookie:adminCookie});assert.equal(r.status,200);assert.ok(r.body.some(o=>!ownIds.includes(o.id)),'Management still sees other dealers');
+ r=await request('/api/orders?mine=1&user_id='+dealerId,{cookie:adminCookie});assert.deepEqual(r.body.map(o=>o.id),ownIds,'User ID cannot change personal scope');
+});

@@ -98,3 +98,13 @@ test('PHP accepts relative API routes and keeps legacy routes compatible',async(
  const r=await request(route,{cookie:adminCookie});assert.equal(r.status,200,route);assert.ok(Array.isArray(r.body),route);
  }
 });
+
+test('administrator personal orders exclude workshop orders while management retains all',async()=>{
+ const products=await request('/products',{cookie:adminCookie});const product=products.body.find(p=>!p.requireImage);assert.ok(product);
+ const payload={items:[{id:product.id,quantity:1,personalization:'Kişisel sipariş',color:'Krem'}],deliveryMethod:'pickup'};
+ let r=await request('/orders',{cookie:adminCookie,method:'POST',body:payload});assert.equal(r.status,201);const ownId=r.body.id;
+ r=await request('/orders?mine=1',{cookie:adminCookie});assert.equal(r.status,200);assert.ok(r.body.some(o=>o.id===ownId));assert.ok(r.body.every(o=>o.user_id===r.body.find(o=>o.id===ownId).user_id));
+ const ownIds=r.body.map(o=>o.id);
+ r=await request('/orders',{cookie:adminCookie});assert.equal(r.status,200);assert.ok(r.body.some(o=>!ownIds.includes(o.id)),'Management still sees other dealers');
+ r=await request('/orders?mine=1&user_id='+dealerId,{cookie:adminCookie});assert.deepEqual(r.body.map(o=>o.id),ownIds,'User ID cannot change personal scope');
+});
