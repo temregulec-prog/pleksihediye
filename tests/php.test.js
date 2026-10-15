@@ -181,3 +181,22 @@ test('all 97 Turkish XML product records can be imported without image networkin
  let r=await request('/admin/xml/preview',{cookie:adminCookie,method:'POST',body:{xml,autoDetect:true}});assert.equal(r.body.products.length,97);r=await request('/admin/xml/import',{cookie:adminCookie,method:'POST',body:{token:r.body.token,importImages:false}});assert.equal(r.body.ok,true);assert.equal(r.body.imported,97);
  const products=(await request('/admin/products',{cookie:adminCookie})).body.filter(p=>p.externalId?.startsWith('batch-'));assert.equal(products.length,97);assert.ok(products.every(p=>p.images.length===0&&p.price===19.9&&p.active===false));
 });
+
+test('categories support admin creation, automatic XML discovery and safe deletion',async()=>{
+ let r=await request('/admin/categories',{method:'POST',body:{name:'Yetkisiz'}});assert.equal(r.status,401);
+ r=await request('/admin/categories',{cookie:adminCookie,method:'POST',body:{name:'Yeni Özel Kategori'}});assert.equal(r.status,200);
+ assert.ok((await request('/categories')).body.includes('Yeni Özel Kategori'));
+ r=await request('/admin/categories',{cookie:adminCookie,method:'POST',body:{name:'Yeni Özel Kategori'}});assert.equal(r.status,409);
+ const xml='<products><product><id>category-xml-test</id><name>Kategori test ürünü</name><price>200</price><category>XML Kategorisi</category></product></products>';
+ r=await request('/admin/xml/preview',{cookie:adminCookie,method:'POST',body:{xml}});r=await request('/admin/xml/import',{cookie:adminCookie,method:'POST',body:{token:r.body.token,importImages:false}});assert.equal(r.body.ok,true);
+ assert.ok((await request('/admin/categories',{cookie:adminCookie})).body.includes('XML Kategorisi'));
+ assert.ok(!(await request('/categories')).body.includes('XML Kategorisi'),'Unpublished supplier products do not expose categories');
+ let p=(await request('/admin/products',{cookie:adminCookie})).body.find(p=>p.externalId==='category-xml-test');
+ r=await request('/admin/products/bulk',{cookie:adminCookie,method:'PATCH',body:{products:[{...p,active:true}]}});assert.equal(r.status,200);
+ assert.ok((await request('/categories')).body.includes('XML Kategorisi'));
+ r=await request('/admin/categories',{cookie:adminCookie,method:'DELETE',body:{name:'XML Kategorisi'}});assert.equal(r.status,200);
+ p=(await request('/admin/products',{cookie:adminCookie})).body.find(x=>x.id===p.id);assert.equal(p.category,'Genel');assert.equal(p.price,200);assert.equal(p.active,true);
+ assert.ok(!(await request('/categories')).body.includes('XML Kategorisi'));
+ r=await request('/admin/categories',{cookie:adminCookie,method:'DELETE',body:{name:'Yeni Özel Kategori'}});assert.equal(r.status,200);assert.ok(!(await request('/categories')).body.includes('Yeni Özel Kategori'));
+ r=await request('/admin/categories',{cookie:adminCookie,method:'DELETE',body:{name:'Genel'}});assert.equal(r.status,400);
+});

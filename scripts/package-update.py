@@ -46,6 +46,9 @@ XML aktariminda hata ayrintisi ve onizlemeyi koruyarak yeniden deneme eklendi.
 Gorselleri atlama ve yalnizca urun bilgilerini aktarma acik seceneklerdir.
 Ana sayfa gorselleri yuklenirken otomatik sikistirilir.
 Mevcut gorseller Ana sayfa > Mevcut gorseli sikistir ile donusturulup yayinlanabilir.
+Kategoriler artik dinamiktir; XML urunlerinin kategorileri otomatik gosterilir.
+Yonetim > Urun yonetimi > Kategorileri yonet ile kategori eklenir/silinir.
+Silinen kategorinin urunleri Genel kategorisine tasinir.
 Cikis yap dugmesi de bu pakete dahildir.
 '''
 out = root / 'dagitim/pleksihediye-php82-guncelleme.zip'
