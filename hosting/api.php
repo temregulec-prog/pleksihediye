@@ -3,7 +3,7 @@ declare(strict_types=1);
 if(!defined('PLEKSI_APP'))define('PLEKSI_APP',true);define('PLEKSI_API',true);
 try{
  require __DIR__.'/app/bootstrap.php';
- $raw=(string)($_GET['route']??'');$route=parse_url($raw,PHP_URL_PATH)?:'/';parse_str((string)(parse_url($raw,PHP_URL_QUERY)??''),$extra);$_GET=array_replace($extra,$_GET);
+ $raw=(string)($_GET['route']??'');$route='/'.ltrim(parse_url($raw,PHP_URL_PATH)?:'','/');parse_str((string)(parse_url($raw,PHP_URL_QUERY)??''),$extra);$_GET=array_replace($extra,$_GET);
  $method=$_SERVER['REQUEST_METHOD']??'GET';if(!in_array($method,['GET','POST','PATCH','PUT','DELETE'],true))fail('Desteklenmeyen yöntem.',405);
  if($method!=='GET'){
   $origin=$_SERVER['HTTP_ORIGIN']??'';if($origin!==''){$o=parse_url($origin);$actual=($_SERVER['HTTP_HOST']??'');$originHost=($o['host']??'').(isset($o['port'])?':'.$o['port']:'');if(!in_array($o['scheme']??'',['http','https'],true)||strcasecmp($originHost,$actual)!==0)fail('Geçersiz istek kaynağı.',403);}

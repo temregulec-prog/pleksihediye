@@ -92,3 +92,9 @@ await request('/admin/notifications/read-all',{cookie:adminCookie,method:'POST'}
 test('temporary-password expiry and membership deactivation invalidate access',async()=>{
 let r=await request('/admin/dealers',{cookie:adminCookie});const member=r.body.find(u=>u.phone==='905321110003');r=await request('/admin/dealers/'+member.id+'/reset-password',{cookie:adminCookie,method:'POST'});assert.equal(r.status,200);const temp=r.body.temporaryPassword;dbCommand('query',{sql:'UPDATE ph_users SET password_expires=? WHERE id=?',params:[Date.now()-1000,member.id]});r=await request('/auth/login',{method:'POST',body:{phone:member.phone,password:temp}});assert.equal(r.status,403);assert.match(r.body.error,/süresi/);r=await request('/orders',{cookie:otherCookie});assert.equal(r.status,401);
 });
+
+test('PHP accepts relative API routes and keeps legacy routes compatible',async()=>{
+ for(const route of ['products','/products','orders','/orders','orders?deleted=1','/orders?deleted=1']){
+ const r=await request(route,{cookie:adminCookie});assert.equal(r.status,200,route);assert.ok(Array.isArray(r.body),route);
+ }
+});
