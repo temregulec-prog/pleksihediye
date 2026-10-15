@@ -15,6 +15,6 @@ try{
  if($user&&$user['must_change_password']&&!in_array($route,['/me','/logout','/auth/login','/auth/change-password','/auth/forgot'],true))out(['error'=>'Devam etmeden önce yeni şifrenizi belirleyin.','mustChangePassword'=>true],403);
  if(str_starts_with($route,'/admin/'))admin();
  require __DIR__.'/app/accounts.php';require __DIR__.'/app/products.php';require __DIR__.'/app/orders.php';require __DIR__.'/app/xml.php';
- accounts_route($route,$method,$b);products_route($route,$method,$b);orders_route($route,$method,$b);xml_route($route,$method,$b);
+ homepage_route($route,$method,$b);accounts_route($route,$method,$b);products_route($route,$method,$b);orders_route($route,$method,$b);xml_route($route,$method,$b);
  fail('İşlem bulunamadı.',404);
 }catch(ApiError $e){out(['error'=>$e->getMessage()],$e->status);}catch(JsonException $e){out(['error'=>'Geçersiz JSON verisi.'],400);}catch(Throwable $e){error_log('Pleksi API: '.$e::class.' [sunucu işlemi başarısız]');out(['error'=>'İşlem tamamlanamadı. Veritabanı ve PHP hata günlüğünü kontrol edin.'],500);}

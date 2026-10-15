@@ -9,4 +9,7 @@ $p='Uzun-ve-güvenli-şifre-'.str_repeat('a',100);$h=pass_hash($p);check(pass_ch
 $xml='<products><product><id>ABC</id><name>İsim &amp; Çiçek</name><price>1.300,50</price><description><![CDATA[Size özel & güzel]]></description><image>https://example.com/a.png</image><image>https://example.com/b.png</image></product></products>';
 $rows=parse_xml($xml,xml_mapping(),20);check($rows[0]['price']===1300.5,'comma decimal');check($rows[0]['name']==='İsim & Çiçek','XML entities');check(count($rows[0]['remoteImages'])===2,'multiple XML images');
 $bad=['<!DOCTYPE foo [<!ENTITY a SYSTEM "file:///etc/passwd">]><products/>','<products><product><id>1</id><name>Ürün</name><price>abc</price></product></products>','<products>'];foreach($bad as $input){$rejected=false;try{parse_xml($input,xml_mapping(),20);}catch(ApiError $e){$rejected=true;}check($rejected,'invalid/XXE XML rejected');}
+check(xml_redirect_url('https://example.com/api/feed.xml','/catalog.xml')==='https://example.com/catalog.xml','root redirect');
+check(xml_redirect_url('https://example.com/api/feed.xml','?page=2')==='https://example.com/api/feed.xml?page=2','query redirect');
+check(xml_redirect_url('https://example.com/api/feed.xml','new.xml')==='https://example.com/api/new.xml','relative redirect');
 echo "PASS: PHP normalization, passwords, SEO, SSRF classification, XML and XXE checks\n";

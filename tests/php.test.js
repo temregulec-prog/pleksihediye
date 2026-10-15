@@ -119,3 +119,36 @@ test('logo settings publish only the administrator selected image and preserve o
  const html=await(await fetch(base+'/')).text();assert.ok(html.includes('"logoId":"'+id+'"'));
  r=await request('/admin/settings',{cookie:adminCookie,method:'PUT',body:{logoId:null}});assert.equal(r.status,200);assert.equal((await fetch(base+'/api.php?route=uploads/'+id)).status,403);
 });
+
+test('homepage content is admin-only, persists, validates, and safely publishes selected cover images',async()=>{
+ let r=await request('/admin/homepage',{cookie:adminCookie});assert.equal(r.status,200);const original=r.body;assert.equal(original.heroLine1,'Küçük detaylar,');
+ assert.equal((await request('/admin/homepage')).status,401);
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aV1cAAAAASUVORK5CYII=','base64');const form=new FormData();form.append('image',new Blob([png],{type:'image/png'}),'cover.png');const upload=await fetch(base+'/api.php?route=uploads',{method:'POST',headers:{Cookie:adminCookie},body:form});const id=(await upload.json()).id;
+ const changed={...original,heroLine1:'Yeni ana başlık <script>test</script>',heroDescription:'Yeni açıklama\nİkinci satır',showDealer:false,heroImageId:id};
+ r=await request('/admin/homepage',{cookie:adminCookie,method:'PUT',body:{...changed,heroImageId:imageId}});assert.equal(r.status,400,'Cannot publish dealer private artwork');
+ r=await request('/admin/homepage',{cookie:adminCookie,method:'PUT',body:{...changed,heroLine1:'x'.repeat(1000)}});assert.equal(r.status,400);
+ r=await request('/admin/homepage',{cookie:adminCookie,method:'PUT',body:changed});assert.equal(r.status,200);assert.deepEqual(r.body,changed);
+ const html=await(await fetch(base+'/')).text();const config=JSON.parse(html.match(/window.PLEKSI_CONFIG=(.*?);<\/script>/s)[1]);assert.equal(config.homepage.heroLine1,changed.heroLine1);assert.ok(!html.includes('<script>test</script>'));
+ assert.equal((await fetch(base+'/api.php?route=uploads/'+id)).status,200);
+ await request('/admin/homepage',{cookie:adminCookie,method:'PUT',body:original});assert.equal((await fetch(base+'/api.php?route=uploads/'+id)).status,403);
+});
+
+test('single and selected product deletion is permanent, atomic, and preserves historical order editing',async()=>{
+ const before=(await request('/orders',{cookie:adminCookie})).body;const order=before.find(o=>o.status==='İncelemede');assert.ok(order);const id=order.items[0].id;
+ let r=await request('/admin/products/'+id,{method:'DELETE'});assert.equal(r.status,401);
+ r=await request('/admin/products/'+id,{cookie:adminCookie,method:'DELETE'});assert.equal(r.status,200);assert.equal(r.body.deleted,1);
+ assert.ok(!(await request('/products')).body.some(p=>p.id===id));
+ const kept=(await request('/orders',{cookie:adminCookie})).body.find(o=>o.id===order.id);assert.deepEqual(kept.items,order.items);assert.equal(kept.total,order.total);
+ r=await request('/orders/'+order.id,{cookie:adminCookie,method:'PATCH',body:{version:kept.version,items:kept.items.map((i,n)=>n===0?{...i,personalization:'Katalog silindikten sonra değişti'}:i),deliveryMethod:kept.customer.deliveryMethod}});assert.equal(r.status,200);assert.equal(r.body.items[0].price,kept.items[0].price);
+ r=await request('/orders',{cookie:adminCookie,method:'POST',body:{items:[{id,quantity:1}],deliveryMethod:'pickup'}});assert.equal(r.status,400,'Deleted product cannot be newly ordered');
+ const ids=(await request('/admin/products',{cookie:adminCookie})).body.slice(0,2).map(p=>p.id);assert.equal(ids.length,2);
+ r=await request('/admin/products/bulk',{cookie:adminCookie,method:'DELETE',body:{ids:[ids[0],999999999]}});assert.ok(r.status>=400);assert.ok((await request('/admin/products',{cookie:adminCookie})).body.some(p=>p.id===ids[0]));
+ r=await request('/admin/products/bulk',{cookie:adminCookie,method:'DELETE',body:{ids}});assert.equal(r.status,200);assert.equal(r.body.deleted,2);assert.ok(!(await request('/admin/products',{cookie:adminCookie})).body.some(p=>ids.includes(p.id)));
+});
+
+test('XML automatic matching handles supplier field names and saved source mappings can be edited',async()=>{
+ const xml='<Catalog><Product><SKU>DG-123</SKU><Title>Özel Pleksi</Title><RetailPrice>1.250,50</RetailPrice><Details><![CDATA[Özel tasarım]]></Details><Images><Image>https://example.com/a.png</Image></Images></Product></Catalog>';
+ let r=await request('/admin/xml/preview',{cookie:adminCookie,method:'POST',body:{xml,autoDetect:true,commissionPercent:20}});assert.equal(r.status,200);assert.equal(r.body.products[0].price,1250.5);assert.equal(r.body.products[0].name,'Özel Pleksi');assert.equal(r.body.mapping.itemPath,'Catalog.Product');assert.equal(r.body.mapping.image,'Images.Image');
+ r=await request('/admin/xml/sources',{cookie:adminCookie,method:'POST',body:{name:'Örnek kaynak',url:'https://example.com/catalog.xml',commissionPercent:20}});assert.equal(r.status,201);const id=r.body.id;
+ r=await request('/admin/xml/sources/'+id,{cookie:adminCookie,method:'PUT',body:{name:'Düzenlenen kaynak',url:'https://example.com/new.xml',commissionPercent:15,mapping:{itemPath:'Catalog.Product',id:'SKU',name:'Title',price:'RetailPrice'}}});assert.equal(r.status,200);const source=(await request('/admin/xml/sources',{cookie:adminCookie})).body.find(s=>s.id===id);assert.equal(source.mapping.name,'Title');assert.equal(source.commission,15);
+});

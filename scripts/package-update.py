@@ -10,7 +10,7 @@ hosting = root / 'hosting'
 html = (hosting / 'app/frontend.html').read_text()
 assets = sorted(set(re.findall(r'/assets/([^"\s]+)', html)))
 assert assets, 'Arayüz dosyaları bulunamadı'
-files = ['index.php', 'api.php', 'app/core.php', 'app/accounts.php', 'app/orders.php', 'app/frontend.html'] + ['assets/' + name for name in assets]
+files = ['index.php', 'api.php', 'app/core.php', 'app/bootstrap.php', 'app/homepage.php', 'app/homepage-schema.json', 'app/accounts.php', 'app/orders.php', 'app/products.php', 'app/xml.php', 'app/frontend.html'] + ['assets/' + name for name in assets]
 notes = '''PLEKSI HEDIYE - UYGULAMA GUNCELLEMESI
 
 ZIP dosyasini mevcut sitenin kurulu oldugu klasore cikarin.
@@ -36,6 +36,9 @@ Logoyu bu alandan secip Ayarlari kaydet dugmesine basin.
 Logo mobilde 150 px, bilgisayarda 220 px genislikte orani korunarak gosterilir.
 SSL olmayan HTTP baglantilarinda yonetim panelinin bos ekrana dusmesi duzeltilmistir.
 Sepet ve siparis duzenleme ayni HTTP uyumluluk duzeltmesini icerir.
+Ana sayfa metinleri, kapak gorselleri ve bolumleri Yonetim > Ana sayfa alanindan duzenlenir.
+Urunler tek tek veya secilerek kalici silinebilir; eski siparisler korunur.
+XML otomatik alan bulma, kayitli kaynak duzenleme ve HTTPS yonlendirme destegi eklendi.
 Cikis yap dugmesi de bu pakete dahildir.
 '''
 out = root / 'dagitim/pleksihediye-php82-guncelleme.zip'

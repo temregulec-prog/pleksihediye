@@ -1,0 +1,358 @@
+{
+  "groups": [
+    {
+      "title": "Üst duyuru şeridi",
+      "fields": [
+        {
+          "key": "announcementLeft",
+          "label": "Sol duyuru",
+          "default": "Sevgiyle tasarlandı, sizin için kişiselleştirildi.",
+          "max": 180,
+          "multiline": false
+        },
+        {
+          "key": "announcementRight",
+          "label": "Sağ duyuru",
+          "default": "Sana özel tasarımlar, kalpten gelen hediyeler",
+          "max": 180,
+          "multiline": false
+        }
+      ]
+    },
+    {
+      "title": "Ana tanıtım alanı",
+      "fields": [
+        {
+          "key": "heroEyebrow",
+          "label": "Başlık üzerindeki küçük yazı",
+          "default": "SIRADAN BİR HEDİYEDEN FAZLASI",
+          "max": 150,
+          "multiline": false
+        },
+        {
+          "key": "heroLine1",
+          "label": "Başlık ilk satır",
+          "default": "Küçük detaylar,",
+          "max": 80,
+          "multiline": false
+        },
+        {
+          "key": "heroLine2",
+          "label": "Başlık ikinci satır",
+          "default": "kocaman",
+          "max": 80,
+          "multiline": false
+        },
+        {
+          "key": "heroEmphasis",
+          "label": "Başlık vurgusu",
+          "default": "mutluluklar.",
+          "max": 80,
+          "multiline": false
+        },
+        {
+          "key": "heroDescription",
+          "label": "Ana açıklama",
+          "default": "Bir isim, bir anı, içten bir gülümseme…\nSevdiklerinize özel, sizin kadar eşsiz tasarımlar.",
+          "max": 1000,
+          "multiline": true
+        },
+        {
+          "key": "heroButton",
+          "label": "Ürünlere götüren butonun yazısı",
+          "default": "Sana özel olanı keşfet",
+          "max": 80,
+          "multiline": false
+        },
+        {
+          "key": "heroNote",
+          "label": "Buton altı notu",
+          "default": "Özenle tasarlanır. Sevgiyle hazırlanır.",
+          "max": 200,
+          "multiline": false
+        },
+        {
+          "key": "heroCaption1",
+          "label": "Temsili görsel üst yazısı",
+          "default": "bir hediye.",
+          "max": 80,
+          "multiline": false
+        },
+        {
+          "key": "heroCaption2",
+          "label": "Temsili görsel alt yazısı",
+          "default": "bin güzel his.",
+          "max": 80,
+          "multiline": false
+        },
+        {
+          "key": "heroExampleName",
+          "label": "Temsili isimlikteki isim",
+          "default": "Elif",
+          "max": 40,
+          "multiline": false
+        }
+      ]
+    },
+    {
+      "title": "Avantaj kutuları",
+      "fields": [
+        {
+          "key": "benefit1Title",
+          "label": "1. kutu başlığı",
+          "default": "Özenli & güvenli gönderim",
+          "max": 180,
+          "multiline": false
+        },
+        {
+          "key": "benefit1Text",
+          "label": "1. kutu açıklaması",
+          "default": "Mutluluğunuz kapınıza gelsin",
+          "max": 180,
+          "multiline": false
+        },
+        {
+          "key": "benefit2Title",
+          "label": "2. kutu başlığı",
+          "default": "Size özel tasarım",
+          "max": 180,
+          "multiline": false
+        },
+        {
+          "key": "benefit2Text",
+          "label": "2. kutu açıklaması",
+          "default": "Her detayında siz varsınız",
+          "max": 180,
+          "multiline": false
+        },
+        {
+          "key": "benefit3Title",
+          "label": "3. kutu başlığı",
+          "default": "Hediye etmeye hazır",
+          "max": 180,
+          "multiline": false
+        },
+        {
+          "key": "benefit3Text",
+          "label": "3. kutu açıklaması",
+          "default": "Sevgiyle hazırlanan paketler",
+          "max": 180,
+          "multiline": false
+        },
+        {
+          "key": "benefit4Title",
+          "label": "4. kutu başlığı",
+          "default": "Güvenle alışveriş",
+          "max": 180,
+          "multiline": false
+        },
+        {
+          "key": "benefit4Text",
+          "label": "4. kutu açıklaması",
+          "default": "Siparişinizi hesabınızdan takip edin",
+          "max": 180,
+          "multiline": false
+        }
+      ]
+    },
+    {
+      "title": "Ürün koleksiyonu",
+      "fields": [
+        {
+          "key": "collectionEyebrow",
+          "label": "Küçük koleksiyon başlığı",
+          "default": "BİRİCİK İNSANLARA, BİRİCİK HEDİYELER",
+          "max": 160,
+          "multiline": false
+        },
+        {
+          "key": "collectionTitle",
+          "label": "Koleksiyon başlığı",
+          "default": "Hangisi seni",
+          "max": 80,
+          "multiline": false
+        },
+        {
+          "key": "collectionEmphasis",
+          "label": "Koleksiyon başlık vurgusu",
+          "default": "anlatıyor?",
+          "max": 80,
+          "multiline": false
+        },
+        {
+          "key": "collectionNote",
+          "label": "Koleksiyon sağ notu",
+          "default": "Kendine ya da sevdiğin birine…",
+          "max": 180,
+          "multiline": false
+        },
+        {
+          "key": "collectionFooter",
+          "label": "Koleksiyon alt notu",
+          "default": "Her tasarımın bir hikâyesi var. Seninkini bul.",
+          "max": 180,
+          "multiline": false
+        },
+        {
+          "key": "collectionButton",
+          "label": "Tüm ürünler butonu",
+          "default": "Tüm koleksiyonu keşfet",
+          "max": 80,
+          "multiline": false
+        }
+      ]
+    },
+    {
+      "title": "Bayi tanıtım alanı",
+      "fields": [
+        {
+          "key": "dealerEyebrow",
+          "label": "Küçük bayi başlığı",
+          "default": "GÜZEL ŞEYLER BİRLİKTE ÇOĞALIR",
+          "max": 150,
+          "multiline": false
+        },
+        {
+          "key": "dealerTitle",
+          "label": "Bayi başlığı",
+          "default": "Hikâyemizin bir parçası olun.",
+          "max": 150,
+          "multiline": false
+        },
+        {
+          "key": "dealerDescription",
+          "label": "Bayi açıklaması",
+          "default": "İşinize değer katan tasarımlar, bayilere özel fiyatlar ve toplu sipariş kolaylığı.",
+          "max": 1000,
+          "multiline": true
+        },
+        {
+          "key": "dealerButton",
+          "label": "Bayi butonu",
+          "default": "Bayi başvurusu yap",
+          "max": 80,
+          "multiline": false
+        }
+      ]
+    },
+    {
+      "title": "Hakkımızda ve alt alan",
+      "fields": [
+        {
+          "key": "storyEyebrow",
+          "label": "Hakkımızda küçük başlığı",
+          "default": "PLEKSİ HEDİYE DÜNYASI",
+          "max": 150,
+          "multiline": false
+        },
+        {
+          "key": "storyLine1",
+          "label": "Hakkımızda başlığı",
+          "default": "Hediyeden geriye",
+          "max": 100,
+          "multiline": false
+        },
+        {
+          "key": "storyEmphasis",
+          "label": "Hakkımızda başlık vurgusu",
+          "default": "bir his kalır.",
+          "max": 100,
+          "multiline": false
+        },
+        {
+          "key": "storyDescription",
+          "label": "Hakkımızda açıklaması",
+          "default": "Biz o hissin peşindeyiz. Bir ismi tasarıma, bir anıyı hatıraya dönüştürüyoruz. Her parçayı, birinin yüzündeki o ilk gülümsemeyi düşünerek hazırlıyoruz.",
+          "max": 2000,
+          "multiline": true
+        },
+        {
+          "key": "storyButton",
+          "label": "Hakkımızda butonu",
+          "default": "Bizi biraz daha tanıyın",
+          "max": 80,
+          "multiline": false
+        },
+        {
+          "key": "storyArtText",
+          "label": "Hakkımızda görsel yazısı",
+          "default": "küçük bir atölyeden,\ngüzel hikâyelere.",
+          "max": 160,
+          "multiline": true
+        },
+        {
+          "key": "footerDescription",
+          "label": "Logo altı açıklaması",
+          "default": "İçinden sevgi geçen tasarımlar.\nSize özel, kalpten gelen.",
+          "max": 300,
+          "multiline": true
+        },
+        {
+          "key": "footerTitle",
+          "label": "Alt alan iş ortaklığı başlığı",
+          "default": "İş ortaklığımız burada başlasın.",
+          "max": 150,
+          "multiline": false
+        },
+        {
+          "key": "footerText",
+          "label": "Alt alan iş ortaklığı açıklaması",
+          "default": "Birlikte daha çok insana mutluluk ulaştıralım.",
+          "max": 300,
+          "multiline": true
+        },
+        {
+          "key": "footerButton",
+          "label": "Alt alan bayi butonu",
+          "default": "Bayi dünyasına katılın",
+          "max": 80,
+          "multiline": false
+        },
+        {
+          "key": "footerNote",
+          "label": "Alt alan son notu",
+          "default": "Biraz pleksi, çokça sevgi. ♡",
+          "max": 150,
+          "multiline": false
+        }
+      ]
+    }
+  ],
+  "images": [
+    {
+      "key": "heroImageId",
+      "label": "Ana kapak görseli"
+    },
+    {
+      "key": "storyImageId",
+      "label": "Hakkımızda görseli"
+    }
+  ],
+  "switches": [
+    {
+      "key": "showAnnouncement",
+      "label": "Üst duyuru şeridi",
+      "default": true
+    },
+    {
+      "key": "showHero",
+      "label": "Ana tanıtım alanı",
+      "default": true
+    },
+    {
+      "key": "showBenefits",
+      "label": "Avantaj kutuları",
+      "default": true
+    },
+    {
+      "key": "showDealer",
+      "label": "Bayi tanıtım alanı",
+      "default": true
+    },
+    {
+      "key": "showStory",
+      "label": "Hakkımızda alanı",
+      "default": true
+    }
+  ]
+}

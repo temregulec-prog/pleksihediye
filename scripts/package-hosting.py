@@ -16,7 +16,7 @@ out.parent.mkdir(exist_ok=True)
 allowed = ['index.php', 'api.php', 'install.php', '.htaccess', '.user.ini', 'KURULUM.txt']
 allowed += ['app/' + p.name for p in (hosting / 'app').iterdir()
             if p.name in {'core.php', 'bootstrap.php', 'accounts.php', 'products.php', 'orders.php',
-                          'xml.php', 'schema.sql', 'seed.json', 'frontend.html', '.htaccess'}]
+                          'xml.php', 'homepage.php', 'homepage-schema.json', 'schema.sql', 'seed.json', 'frontend.html', '.htaccess'}]
 allowed += ['assets/' + p.name for p in (hosting / 'assets').iterdir() if p.suffix in {'.js', '.css'}]
 with ZipFile(out, 'w', ZIP_DEFLATED) as z:
     for name in sorted(allowed):

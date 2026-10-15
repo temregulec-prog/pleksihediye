@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 if(!defined('PLEKSI_APP')){http_response_code(404);exit;}
-require_once __DIR__.'/core.php';
+require_once __DIR__.'/core.php';require_once __DIR__.'/homepage.php';
 header('X-Content-Type-Options: nosniff');header('Referrer-Policy: strict-origin-when-cross-origin');
 if(!is_file(__DIR__.'/config.php')){if(defined('PLEKSI_API'))out(['error'=>'Önce kurulum ekranını tamamlayın.'],503);$installBase=rtrim(str_replace('\\','/',dirname($_SERVER['SCRIPT_NAME']??'/index.php')),'/.');header('Location: '.$installBase.'/install.php');exit;}
 $config=require __DIR__.'/config.php';

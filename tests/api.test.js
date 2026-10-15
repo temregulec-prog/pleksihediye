@@ -29,3 +29,9 @@ test('empty hosting 409 response preserves duplicate registration meaning',async
  let calls=0;t.mock.method(globalThis,'fetch',async()=>{calls++;return new Response(' ',{status:409})});
  await assert.rejects(requestApi('/auth/register',{method:'POST',body:{}}),/zaten bir üyelik veya başvuru var/);assert.equal(calls,1);
 });
+
+test('XML operations can use a longer timeout without forwarding internal timeout options',async t=>{
+ const original=setTimeout;t.mock.method(globalThis,'setTimeout',(fn,delay)=>{assert.equal(delay,90000);return original(fn,delay)});
+ t.mock.method(globalThis,'fetch',async(_url,options)=>{assert.equal(options.timeoutMs,undefined);return Response.json({products:[]})});
+ assert.deepEqual(await requestApi('/admin/xml/preview',{method:'POST',timeoutMs:90000,body:{xml:'<products/>'}}),{products:[]});
+});

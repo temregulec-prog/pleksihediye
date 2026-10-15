@@ -6,7 +6,10 @@ function validate_product(array $p,array $old=[]): void {global $user;
  foreach($p['images'] as $id)if(!is_string($id)||(!in_array($id,$old['images']??[],true)&&!one('SELECT id FROM ph_uploads WHERE id=? AND user_id=?',[$id,$user['id']])))fail('Ürün görseli geçersiz.');
  if(isset($p['active'])&&!is_bool($p['active']))fail('Ürün yayın durumu geçersiz.');
 }
+function delete_products(mixed $ids): int {if(!is_array($ids)||!count($ids)||count($ids)>1000||count($ids)!==count(array_unique($ids)))fail('Silinecek ürünleri seçin.');foreach($ids as $id)if(!is_int($id)||$id<1)fail('Ürün seçimi geçersiz.');sort($ids);return atomic(function()use($ids){foreach($ids as $id)if(!one('SELECT id FROM ph_products WHERE id=? FOR UPDATE',[$id]))fail('Seçimdeki ürün artık bulunamıyor. Listeyi yenileyin.',409);foreach($ids as $id)sql('DELETE FROM ph_products WHERE id=?',[$id]);return count($ids);});}
 function products_route(string $route,string $method,array $b): void {global $user;
+ if($route==='/admin/products/bulk'&&$method==='DELETE')out(['deleted'=>delete_products($b['ids']??null)]);
+ if(preg_match('~^/admin/products/(\d+)$~',$route,$m)&&$method==='DELETE')out(['deleted'=>delete_products([(int)$m[1]])]);
  if($route==='/products'&&$method==='GET'){$ps=array_values(array_filter(catalog(),fn($p)=>$p['active']??true));if(!is_dealer($user))foreach($ps as &$p){unset($p['dealerPrice'],$p['commissionPercent']);}out($ps);}
  if($route==='/admin/products'&&$method==='GET')out(catalog());
  if($route==='/admin/products'&&$method==='POST'){validate_product($b);$p=array_intersect_key($b,array_flip(['name','description','category','price','commissionPercent','requireText','requireImage','images','active']));$p+=['active'=>true,'kind'=>'name','color'=>'rose','tag'=>'Yeni'];out(save_product($p),201);}

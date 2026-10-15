@@ -30,6 +30,9 @@ Arayüzün hazır JavaScript/CSS dosyaları paket içindedir; tüm sunucu işlem
    Site içindeki Siparişlerim yalnızca kendi siparişlerinizi; Yönetim merkezi tüm atölyeyi gösterir.
    İlk yönetici telefonu WhatsApp şifre destek hedefi olur.
    Yönetim panelinden teslimat ücretlerini belirleyin (ilk kurulumda 0 TL'dir).
+   Ana sayfa kartından duyuruları, başlıkları, kapak görselini ve tanıtım bölümlerini düzenleyin.
+   Ürün yönetiminde ürünleri tek tek veya seçerek kalıcı silebilirsiniz; eski siparişler korunur.
+   XML bağlantısı bölümünde alanları otomatik bulabilir veya kayıtlı kaynak eşleştirmesini düzenleyebilirsiniz.
    Yeni komisyoncuları panelden onaylayın. Şifre yenileme ve ürün/sipariş işlemleri paneldedir.
 
 Kurulum tamamlanınca tekrar çalıştırılamaz. İsterseniz install.php dosyasını silebilirsiniz.
@@ -59,5 +62,5 @@ Bu tam kurulum paketi hazır arayüzü ve güncel PHP dosyalarını içerir.
 Önceki demo kurulumunun üyeleri, siparişleri ve logo dosyası pakete dahil değildir.
 Örnek ürünler/fiyatlar tanıtım içindir. Gerçek katalog, orijinal logo, banka/firma bilgileri ve
 satış/iade/KVKK metinleri yayına geçmeden tamamlanmalıdır.
-XML örnek dosya akışı hazırdır; gerçek tedarikçi bağlantısı henüz verilmemiştir.
+XML önizleme ve içe aktarma akışı hazırdır. Tedarikçiye erişim ve alan eşleştirmesi, gerçek bağlantı üzerinden ayrıca doğrulanmalıdır.
 Bildirimler panel açıkken 10 saniyede bir kontrol edilir; kapalı tarayıcıya push gönderilmez.
