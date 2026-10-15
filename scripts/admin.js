@@ -1,0 +1,3 @@
+import{DatabaseSync}from'node:sqlite';import{normalizePhone}from'../shared.js';
+const phone=normalizePhone(process.argv[2]);if(!phone){console.error('Kullanım: node scripts/admin.js 05XXXXXXXXX');process.exit(1)}
+const db=new DatabaseSync(process.env.DATABASE_PATH||'.data/store.sqlite');const r=db.prepare("UPDATE users SET role='admin',dealer_status='approved' WHERE phone=?").run(phone);if(!r.changes){console.error('Önce bu telefon numarasıyla web arayüzünden üyelik oluşturun.');process.exit(1)}console.log('Hesap yönetici olarak onaylandı. İlk yönetici telefonu WhatsApp destek hedefi olarak kullanılır.');
