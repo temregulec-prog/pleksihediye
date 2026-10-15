@@ -1,0 +1,2 @@
+import React from 'react';
+export default function ProductOptions({options=[],value={},onChange}){return options.map(o=><label key={o.name}>{o.name} <span className="field-badge">Seçiniz</span><select required value={value[o.name]||''} onChange={e=>onChange({...value,[o.name]:e.target.value})}><option value="">Seçiniz</option>{o.values.map(v=><option key={v} value={v}>{v}</option>)}</select></label>)}

@@ -225,3 +225,23 @@ test('hosted images are checked locally and spreadsheet import needs no ZIP or u
  const image=await fetch(base+'/api.php?route=/uploads/'+products[0].images[0],{headers:{Cookie:adminCookie}});assert.equal(image.status,200);assert.deepEqual(Buffer.from(await image.arrayBuffer()),png);
  r=await request('/admin/products/spreadsheet',{cookie:adminCookie,method:'POST',body:{products:[{...p,importIdentity:'host-missing',localImagePath:'/gorseller/missing.jpg'}]}});assert.equal(r.status,400);assert.equal((await request('/admin/products',{cookie:adminCookie})).body.filter(x=>x.name===p.name).length,1);
 });
+
+test('product-specific options are validated, saved in orders and required only when configured',async()=>{
+ const baseProduct={name:'Seçeneksiz standart ürün',description:'',category:'Seçenek Testi',price:300,commissionPercent:20,images:[],requireText:false,requireImage:false,active:true};
+ let r=await request('/admin/products',{cookie:adminCookie,method:'POST',body:baseProduct});assert.equal(r.status,201);const plain=r.body;
+ r=await request('/orders',{cookie:dealerCookie,method:'POST',body:{items:[{id:plain.id,quantity:1}]}});assert.equal(r.status,201,'Optional text and artwork must not block checkout');
+ const options=[{name:'Renk',values:['Gold','Gümüş']},{name:'Boyut',values:['Küçük','Büyük']}];
+ r=await request('/admin/products',{cookie:adminCookie,method:'POST',body:{...baseProduct,name:'Araç süsü seçenekli',options}});assert.equal(r.status,201);const p=r.body;assert.deepEqual(p.options,options);
+ for(const optionSelections of [{},{Renk:'Gold'},{Renk:'Pudra pembe',Boyut:'Küçük'},{Renk:'Gold',Boyut:'Küçük',Ekstra:'Yok'}]){r=await request('/orders',{cookie:dealerCookie,method:'POST',body:{items:[{id:p.id,quantity:1,optionSelections}]}});assert.equal(r.status,400)}
+ r=await request('/orders',{cookie:dealerCookie,method:'POST',body:{items:[{id:p.id,quantity:1,optionSelections:{Renk:'Gold',Boyut:'Küçük'}}]}});assert.equal(r.status,201);const id=r.body.id;
+ let order=(await request('/orders',{cookie:dealerCookie})).body.find(o=>o.id===id);assert.deepEqual(order.items[0].optionSelections,{Renk:'Gold',Boyut:'Küçük'});assert.deepEqual(order.items[0].optionDefinitions,options);
+ r=await request('/orders/'+id,{cookie:dealerCookie,method:'PATCH',body:{version:order.version,items:[{...order.items[0],optionSelections:{Renk:'Geçersiz',Boyut:'Büyük'}}]}});assert.equal(r.status,400);
+ r=await request('/orders/'+id,{cookie:dealerCookie,method:'PATCH',body:{version:order.version,items:[{...order.items[0],optionSelections:{Renk:'Gümüş',Boyut:'Büyük'}}]}});assert.equal(r.status,200);assert.equal(r.body.items[0].optionSelections.Renk,'Gümüş');assert.equal(r.body.items[0].price,240);
+ r=await request('/admin/products/'+p.id,{cookie:adminCookie,method:'DELETE'});assert.equal(r.status,200);
+ order=(await request('/orders',{cookie:dealerCookie})).body.find(o=>o.id===id);r=await request('/orders/'+id,{cookie:dealerCookie,method:'PATCH',body:{version:order.version,items:[{...order.items[0],personalization:'Silinen ürün düzenleme'}]}});assert.equal(r.status,200);assert.equal(r.body.items[0].optionSelections.Renk,'Gümüş');
+ r=await request('/admin/products',{cookie:adminCookie,method:'POST',body:{...baseProduct,requireText:true,requireImage:true}});assert.equal(r.status,201);const required=r.body;
+ for(const item of [{id:required.id,quantity:1},{id:required.id,quantity:1,personalization:'İsim'}]){r=await request('/orders',{cookie:dealerCookie,method:'POST',body:{items:[item]}});assert.equal(r.status,400)}
+ r=await request('/orders',{cookie:dealerCookie,method:'POST',body:{items:[{id:required.id,quantity:1,personalization:'İsim',artwork:imageId}]}});assert.equal(r.status,201);
+ order=(await request('/orders',{cookie:dealerCookie})).body.find(o=>o.id===r.body.id);r=await request('/orders/'+order.id,{cookie:dealerCookie,method:'PATCH',body:{version:order.version,items:[{...order.items[0],artwork:null}]}});assert.equal(r.status,400,'Required image cannot be removed during editing');
+ for(const invalid of [[{name:'Renk',values:[]}],[{name:'Renk',values:['Gold','Gold']}],[{name:'Renk',values:['Gold']},{name:'Renk',values:['Gümüş']}]]){r=await request('/admin/products',{cookie:adminCookie,method:'POST',body:{...baseProduct,options:invalid}});assert.equal(r.status,400)}
+});

@@ -57,6 +57,10 @@ Excel ile aktar ekraninda Sunucudaki gorseller secenegi varsayilandir.
 Yalnizca XLSX secilir; gerekirse /gorseller/uzun-acacak klasoru belirtilir.
 Mevcut gorseller HTTP istegi olmadan yerel dosyadan kontrol edilir ve alinir.
 Kategoriler Exceldeki Kategori sutunundan otomatik gelir.
+Urun duzenlemede Secenek ekle ile Renk, Boyut gibi secenekler tanimlanir.
+Tanimlanmayan urunlerde renk/secenek alani gosterilmez.
+Secimler sepette, sipariste ve duzenleme ekraninda saklanir ve sunucuda kontrol edilir.
+Yazi ve gorsel alanlari tum urunlerde vardir; sadece zorunlu secilenler zorunludur.
 Cikis yap dugmesi de bu pakete dahildir.
 '''
 out = root / 'dagitim/pleksihediye-php82-guncelleme.zip'

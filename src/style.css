@@ -36,3 +36,5 @@
 .xml-import-options{padding:16px;border:1px solid #eaded3;background:#fffaf4;border-radius:7px;margin:18px 0}.xml-import-options .check-label{display:flex!important;align-items:center;gap:9px;min-height:38px;font-size:11px!important;margin:0!important}.xml-import-options input{width:auto!important;margin:0!important;accent-color:#b97e93}.xml-mapping li{font-size:11px;line-height:1.7;overflow-wrap:anywhere;margin:8px 0}
 
 .nav{flex-wrap:wrap;height:auto}.category-admin-list>div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}.category-admin-list>div>span{min-width:0}.category-cards b{overflow-wrap:anywhere}
+
+.product-option-editor{border:1px solid var(--line);border-radius:8px;padding:14px;margin:12px 0}.product-option-editor textarea{min-height:85px}.product-option-editor small{color:var(--muted);font-size:11px}
