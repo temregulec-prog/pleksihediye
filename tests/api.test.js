@@ -5,7 +5,7 @@ const {requestApi}=await import('../src/api.js');
 
 test('read recovers from one network failure and uses installation subfolder',async t=>{
  let calls=0;
- t.mock.method(globalThis,'fetch',async url=>{assert.equal(url,'/yeni/api.php?route=%2Fproducts');if(++calls===1)throw new TypeError('NetworkError');return Response.json([{id:1}])});
+ t.mock.method(globalThis,'fetch',async (url,options)=>{assert.equal(options.cache,'no-store');assert.equal(url,'/yeni/api.php?route=%2Fproducts');if(++calls===1)throw new TypeError('NetworkError');return Response.json([{id:1}])});
  assert.deepEqual(await requestApi('/products'),[{id:1}]);assert.equal(calls,2);
 });
 test('failed writes are never replayed',async t=>{
@@ -22,5 +22,10 @@ test('server errors are preserved and not retried',async t=>{
 });
 test('non JSON hosting response gives a readable error',async t=>{
  t.mock.method(globalThis,'fetch',async()=>new Response('<html>Hosting error</html>',{status:503}));
- await assert.rejects(requestApi('/me'),/geçerli yanıt alınamadı/);
+ await assert.rejects(requestApi('/me'),/HTTP 503/);
+});
+
+test('empty hosting 409 response preserves duplicate registration meaning',async t=>{
+ let calls=0;t.mock.method(globalThis,'fetch',async()=>{calls++;return new Response(' ',{status:409})});
+ await assert.rejects(requestApi('/auth/register',{method:'POST',body:{}}),/zaten bir üyelik veya başvuru var/);assert.equal(calls,1);
 });
