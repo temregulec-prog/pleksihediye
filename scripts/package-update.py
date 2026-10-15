@@ -34,6 +34,8 @@ app/orders.php dosyasi da mutlaka uzerine yazilmalidir.
 Magaza ayarlarinda onizlemeli logo yukleme alani vardir.
 Logoyu bu alandan secip Ayarlari kaydet dugmesine basin.
 Logo mobilde 150 px, bilgisayarda 220 px genislikte orani korunarak gosterilir.
+SSL olmayan HTTP baglantilarinda yonetim panelinin bos ekrana dusmesi duzeltilmistir.
+Sepet ve siparis duzenleme ayni HTTP uyumluluk duzeltmesini icerir.
 Cikis yap dugmesi de bu pakete dahildir.
 '''
 out = root / 'dagitim/pleksihediye-php82-guncelleme.zip'
