@@ -23,7 +23,11 @@ Arayüzün hazır JavaScript/CSS dosyaları paket içindedir; tüm sunucu işlem
    - İsterseniz örnek ürünleri ekleyin.
    - Kurulumu tamamlayın. SQL dosyasını ayrıca içe aktarmanız gerekmez.
 
-5) Mağazayı açın. Telefonunuz ve şifrenizle giriş yapın; Hesabım üzerinden yönetim merkezine girin.
+5) Mağazayı açın. Telefonunuz ve şifrenizle giriş yapın.
+   Profilim / Hesabım ekranından Yönetim merkezi düğmesine basın.
+   Mağaza ayarları bölümünden orijinal logo dosyanızı seçip ayarları kaydedin.
+   Logo mobilde 150 px, bilgisayarda 220 px genişlikte oranı korunarak gösterilir.
+   Site içindeki Siparişlerim yalnızca kendi siparişlerinizi; Yönetim merkezi tüm atölyeyi gösterir.
    İlk yönetici telefonu WhatsApp şifre destek hedefi olur.
    Yönetim panelinden teslimat ücretlerini belirleyin (ilk kurulumda 0 TL'dir).
    Yeni komisyoncuları panelden onaylayın. Şifre yenileme ve ürün/sipariş işlemleri paneldedir.
@@ -51,6 +55,8 @@ Bu ilk PHP sürümü yeni MySQL kurulumu içindir. Eski Node/SQLite verileri oto
 Node.js scrypt şifreleri PHP şifreleriyle uyumlu değildir; gerçek eski veriler varsa ayrı geçiş gerekir.
 
 DEMO VE GERÇEK KULLANIM
+Bu tam kurulum paketi hazır arayüzü ve güncel PHP dosyalarını içerir.
+Önceki demo kurulumunun üyeleri, siparişleri ve logo dosyası pakete dahil değildir.
 Örnek ürünler/fiyatlar tanıtım içindir. Gerçek katalog, orijinal logo, banka/firma bilgileri ve
 satış/iade/KVKK metinleri yayına geçmeden tamamlanmalıdır.
 XML örnek dosya akışı hazırdır; gerçek tedarikçi bağlantısı henüz verilmemiştir.
