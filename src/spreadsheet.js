@@ -44,3 +44,13 @@ export async function openImageArchive(file,rows,prefix=''){
  } catch(e){await reader.close();throw e}
 }
 export async function readArchiveImage(entry){const type=/\.png$/i.test(entry.filename)?'image/png':/\.webp$/i.test(entry.filename)?'image/webp':'image/jpeg';return entry.getData(new BlobWriter(type))}
+
+export function localSpreadsheetImages(rows,folder='',basePath=''){
+ const root=new URL((basePath||'')+'/',location.origin);
+ const directory=folder.trim()?new URL(folder.trim().replace(/\/?$/,'/'),root):null;
+ if(directory&&(directory.origin!==location.origin||directory.search||directory.hash))throw Error('Bu sitedeki görsel klasörünü kullanın. Örnek: /gorseller/uzun-acacak');
+ return rows.map(row=>{
+  const url=directory?new URL(encodeURIComponent(normalize(row.imagePath).split('/').pop()),directory):new URL(normalize(row.imagePath).split('/').map(encodeURIComponent).join('/'),root);
+  return {...row,localImagePath:url.pathname,error:null};
+ });
+}

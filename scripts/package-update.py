@@ -53,6 +53,10 @@ Pasif / yayinda urun filtresi ve filtrelenen urunleri topluca yayinlama eklendi.
 Excel ve ZIP aktarimi Urun yonetimi ekranindadir; alt klasor gorselleri eslestirilir.
 Excel urunleri varsayilan olarak ana sayfada gizlenir, kategorilerinde gorunur.
 Aktarimda fiyat perakende fiyatidir, yeni urunler pasif kaydedilir.
+Excel ile aktar ekraninda Sunucudaki gorseller secenegi varsayilandir.
+Yalnizca XLSX secilir; gerekirse /gorseller/uzun-acacak klasoru belirtilir.
+Mevcut gorseller HTTP istegi olmadan yerel dosyadan kontrol edilir ve alinir.
+Kategoriler Exceldeki Kategori sutunundan otomatik gelir.
 Cikis yap dugmesi de bu pakete dahildir.
 '''
 out = root / 'dagitim/pleksihediye-php82-guncelleme.zip'
