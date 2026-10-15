@@ -39,6 +39,9 @@ Sepet ve siparis duzenleme ayni HTTP uyumluluk duzeltmesini icerir.
 Ana sayfa metinleri, kapak gorselleri ve bolumleri Yonetim > Ana sayfa alanindan duzenlenir.
 Urunler tek tek veya secilerek kalici silinebilir; eski siparisler korunur.
 XML otomatik alan bulma, kayitli kaynak duzenleme ve HTTPS yonlendirme destegi eklendi.
+XML kaynaklari ve gorseller HTTP / HTTPS ile alinabilir.
+Tarayicidan kopyalanan Turkce XML icin urun_adi, fiyat, gorsel alanlari otomatik bulunur.
+Ayni tedarikcinin HTTPS gorsellerini HTTP ile alma secenegi eklenmistir.
 Cikis yap dugmesi de bu pakete dahildir.
 '''
 out = root / 'dagitim/pleksihediye-php82-guncelleme.zip'

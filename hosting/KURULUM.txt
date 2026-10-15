@@ -32,7 +32,9 @@ Arayüzün hazır JavaScript/CSS dosyaları paket içindedir; tüm sunucu işlem
    Yönetim panelinden teslimat ücretlerini belirleyin (ilk kurulumda 0 TL'dir).
    Ana sayfa kartından duyuruları, başlıkları, kapak görselini ve tanıtım bölümlerini düzenleyin.
    Ürün yönetiminde ürünleri tek tek veya seçerek kalıcı silebilirsiniz; eski siparişler korunur.
-   XML bağlantısı bölümünde alanları otomatik bulabilir veya kayıtlı kaynak eşleştirmesini düzenleyebilirsiniz.
+   XML bağlantısı bölümünde HTTP/HTTPS kaynaklarını kullanabilir, alanları otomatik bulabilir
+   veya kayıtlı kaynak eşleştirmesini düzenleyebilirsiniz. Kaynak yalnızca HTTP ile çalışıyorsa
+   aynı tedarikçinin görsellerini de HTTP ile alma seçeneği vardır.
    Yeni komisyoncuları panelden onaylayın. Şifre yenileme ve ürün/sipariş işlemleri paneldedir.
 
 Kurulum tamamlanınca tekrar çalıştırılamaz. İsterseniz install.php dosyasını silebilirsiniz.

@@ -12,4 +12,10 @@ $bad=['<!DOCTYPE foo [<!ENTITY a SYSTEM "file:///etc/passwd">]><products/>','<pr
 check(xml_redirect_url('https://example.com/api/feed.xml','/catalog.xml')==='https://example.com/catalog.xml','root redirect');
 check(xml_redirect_url('https://example.com/api/feed.xml','?page=2')==='https://example.com/api/feed.xml?page=2','query redirect');
 check(xml_redirect_url('https://example.com/api/feed.xml','new.xml')==='https://example.com/api/new.xml','relative redirect');
+check(xml_redirect_url('http://example.com/api/feed.xml','/catalog.xml')==='http://example.com/catalog.xml','HTTP root redirect');
+check(xml_redirect_url('http://example.com/api/feed.xml','//cdn.example.com/a.xml')==='http://cdn.example.com/a.xml','HTTP protocol-relative redirect');
+$copied="This XML file does not appear to have any style information associated with it. The document tree is shown below.\n<urunler><urun><id>4</id><urun_adi>İsim & Pleksi</urun_adi><aciklama><![CDATA[A & B]]></aciklama><fiyat>19.90</fiyat><gorsel>https://supplier.example:443/a.png</gorsel></urun></urunler>";
+$map=detect_xml_mapping($copied);$rows=parse_xml($copied,$map,20);check($map['itemPath']==='urunler.urun','Turkish supplier mapping');check($rows[0]['name']==='İsim & Pleksi','browser copied XML ampersand restored');check($rows[0]['description']==='A & B','CDATA preserved');check($rows[0]['price']===19.9,'supplier decimal price');
+$converted=xml_http_images($rows,'http://supplier.example/catalog.xml');check($converted[0]['remoteImages'][0]==='http://supplier.example/a.png','same supplier explicit HTTP image conversion');
+$blocked=false;try{fetch_public('http://127.0.0.1/feed.xml');}catch(ApiError $e){$blocked=str_contains($e->getMessage(),'ağ adreslerine');}check($blocked,'HTTP private IP blocked');
 echo "PASS: PHP normalization, passwords, SEO, SSRF classification, XML and XXE checks\n";

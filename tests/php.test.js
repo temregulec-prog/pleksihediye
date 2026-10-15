@@ -152,3 +152,11 @@ test('XML automatic matching handles supplier field names and saved source mappi
  r=await request('/admin/xml/sources',{cookie:adminCookie,method:'POST',body:{name:'Örnek kaynak',url:'https://example.com/catalog.xml',commissionPercent:20}});assert.equal(r.status,201);const id=r.body.id;
  r=await request('/admin/xml/sources/'+id,{cookie:adminCookie,method:'PUT',body:{name:'Düzenlenen kaynak',url:'https://example.com/new.xml',commissionPercent:15,mapping:{itemPath:'Catalog.Product',id:'SKU',name:'Title',price:'RetailPrice'}}});assert.equal(r.status,200);const source=(await request('/admin/xml/sources',{cookie:adminCookie})).body.find(s=>s.id===id);assert.equal(source.mapping.name,'Title');assert.equal(source.commission,15);
 });
+
+test('HTTP supplier sources are accepted and browser-copied Turkish XML previews correctly',async()=>{
+ let r=await request('/admin/xml/sources',{cookie:adminCookie,method:'POST',body:{name:'HTTP tedarikçi',url:'http://supplier.example/feed.xml',commissionPercent:20}});assert.equal(r.status,201);const id=r.body.id;
+ r=await request('/admin/xml/sources');assert.equal(r.status,401);
+ r=await request('/admin/xml/sources',{cookie:adminCookie});assert.equal(r.body.find(s=>s.id===id).url,'http://supplier.example/feed.xml');
+ const xml='This XML file does not appear to have any style information associated with it. The document tree is shown below.\n<urunler><urun><id>HTTP-001</id><urun_adi>İsim & Pleksi</urun_adi><aciklama><![CDATA[A & B]]></aciklama><fiyat>19.90</fiyat><gorsel>http://supplier.example/a.png</gorsel></urun></urunler>';
+ r=await request('/admin/xml/preview',{cookie:adminCookie,method:'POST',body:{xml,autoDetect:true,commissionPercent:20}});assert.equal(r.status,200);assert.equal(r.body.products[0].name,'İsim & Pleksi');assert.equal(r.body.products[0].price,19.9);assert.equal(r.body.mapping.name,'urun_adi');
+});
