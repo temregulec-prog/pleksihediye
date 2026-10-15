@@ -1,0 +1,36 @@
+<?php
+declare(strict_types=1);
+if (!defined('PLEKSI_APP')) { http_response_code(404); exit; }
+final class ApiError extends RuntimeException { public function __construct(string $message, public int $status = 400) { parent::__construct($message); } }
+function fail(string $message, int $status=400): never { throw new ApiError($message,$status); }
+function out(mixed $data,int $status=200): never { http_response_code($status);header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store');echo json_encode($data,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);exit; }
+function enc(mixed $v): string { return json_encode($v,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR); }
+function dec(string $v): mixed { return json_decode($v,true,512,JSON_THROW_ON_ERROR); }
+function esc(mixed $v): string { return htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8'); }
+function sql(string $query,array $params=[]): PDOStatement { global $db; $s=$db->prepare($query);$s->execute($params);return $s; }
+function one(string $query,array $params=[]): ?array { $r=sql($query,$params)->fetch();return $r===false?null:$r; }
+function rows(string $query,array $params=[]): array { return sql($query,$params)->fetchAll(); }
+function atomic(callable $fn): mixed { global $db;$db->beginTransaction();try{$result=$fn();$db->commit();return $result;}catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;} }
+function now_ms(): int { return (int)floor(microtime(true)*1000); }
+function phone(mixed $value): ?string { if(!is_string($value))return null;$n=preg_replace('/[\s()+-]/','',$value);if(str_starts_with($n,'0090'))$n=substr($n,2);if(strlen($n)===11&&$n[0]==='0')$n='90'.substr($n,1);if(strlen($n)===10)$n='90'.$n;return preg_match('/^905\d{9}$/D',$n)?$n:null; }
+function valid_text(mixed $v,int $min=2,int $max=100): bool { return is_string($v)&&mb_strlen(trim($v),'UTF-8')>=$min&&mb_strlen($v,'UTF-8')<=$max; }
+function money_value(mixed $v,float $min=0,float $max=1000000): bool { return (is_int($v)||is_float($v))&&is_finite((float)$v)&&$v>=$min&&$v<=$max&&abs($v*100-round($v*100))<0.00001; }
+function setting(string $key,mixed $default=null): mixed { $r=one('SELECT value FROM ph_settings WHERE `key`=?',[$key]);return $r?$r['value']:$default; }
+function set_setting(string $key,string $value): void { sql('INSERT INTO ph_settings (`key`,value) VALUES(?,?) ON DUPLICATE KEY UPDATE value=VALUES(value)',[$key,$value]); }
+function delivery_options(): array { $fees=['pickup'=>0,'cargo'=>0,'address'=>0];$stored=setting('delivery_fees');if($stored)$fees=array_replace($fees,dec($stored));return array_map(fn($id,$label)=>['id'=>$id,'label'=>$label,'fee'=>(float)$fees[$id]],['pickup','cargo','address'],['Ortak Nokta / Elden Teslim','Kargo','Adrese Teslim']); }
+function delivery(string $method): array { foreach(delivery_options() as $d)if($d['id']===$method)return $d;fail('Geçersiz teslimat seçeneği.'); }
+function catalog(): array { return array_map(function($r){$p=dec($r['data']);$p['id']=(int)$r['id'];$p['commissionPercent']=(float)($p['commissionPercent']??20);$p['price']=(float)$p['price'];$p['dealerPrice']=round($p['price']*(100-$p['commissionPercent'])/100,2);$p['requireText']=(bool)($p['requireText']??false);$p['requireImage']=(bool)($p['requireImage']??false);return $p;},rows('SELECT id,data FROM ph_products ORDER BY id')); }
+function product(int $id): ?array { foreach(catalog() as $p)if($p['id']===$id)return $p;return null; }
+function save_product(array $p,?string $xmlKey=null): array { global $db;if(isset($p['id'])){sql('UPDATE ph_products SET data=? WHERE id=?',[enc($p),$p['id']]);return $p;}sql('INSERT INTO ph_products(data,xml_key) VALUES(?,?)',[enc($p),$xmlKey]);$p['id']=(int)$db->lastInsertId();sql('UPDATE ph_products SET data=? WHERE id=?',[enc($p),$p['id']]);return $p; }
+function is_dealer(?array $u): bool {return ($u['dealer_status']??'')==='approved';}
+function safe_user(?array $u): ?array {if(!$u)return null;return ['id'=>(int)$u['id'],'name'=>$u['name'],'firstName'=>$u['first_name'],'lastName'=>$u['last_name'],'phone'=>$u['phone'],'city'=>$u['city'],'district'=>$u['district'],'neighborhood'=>$u['neighborhood'],'role'=>$u['role'],'dealer_status'=>$u['dealer_status'],'mustChangePassword'=>(bool)$u['must_change_password']];}
+function current_user(): ?array { $t=$_COOKIE['ph_session']??'';if(!preg_match('/^[a-f0-9]{64}$/D',$t))return null;$u=one('SELECT u.* FROM ph_users u JOIN ph_sessions s ON s.user_id=u.id WHERE s.token=? AND s.expires>?',[hash('sha256',$t),now_ms()]);if($u&&$u['role']!=='admin'&&!is_dealer($u)){sql('DELETE FROM ph_sessions WHERE user_id=?',[$u['id']]);return null;}return $u; }
+function auth(): array {global $user;if(!$user)fail('Lütfen giriş yapın.',401);return $user;}
+function admin(): array {$u=auth();if($u['role']!=='admin')fail('Yönetici yetkisi gerekiyor.',403);return $u;}
+function new_session(int $id): void {global $config;$token=bin2hex(random_bytes(32));sql('INSERT INTO ph_sessions(token,user_id,expires) VALUES(?,?,?)',[hash('sha256',$token),$id,now_ms()+604800000]);setcookie('ph_session',$token,['expires'=>time()+604800,'path'=>($config['base_path']?:'').'/','secure'=>(bool)$config['secure_cookie'],'httponly'=>true,'samesite'=>'Lax']);}
+function notify(string $type,int $id): void {sql('INSERT INTO ph_notifications(type,subject_id) VALUES(?,?)',[$type,$id]);}
+function slug(array $p): string {$n=strtr($p['name'],['İ'=>'i','I'=>'i','ı'=>'i','Ğ'=>'g','ğ'=>'g','Ü'=>'u','ü'=>'u','Ş'=>'s','ş'=>'s','Ö'=>'o','ö'=>'o','Ç'=>'c','ç'=>'c']);$n=mb_strtolower($n,'UTF-8');$ascii=iconv('UTF-8','ASCII//TRANSLIT',$n);$n=preg_replace('/[^a-z0-9]+/','-',strtolower($ascii===false?$n:$ascii));return trim($n,'-').'-'.$p['id'];}
+function seo_description(array $p): string { return mb_substr($p['name']." ile sevdiklerinize kişiye özel bir hediye hazırlayın. Yazı, renk ve görsel seçenekleriyle Pleksi Hediye'de keşfedin.",0,160,'UTF-8'); }
+function image_mime(string $bytes): string { $i=@getimagesizefromstring($bytes);$mime=$i['mime']??'';if(!in_array($mime,['image/jpeg','image/png','image/webp'],true)||$i[0]*$i[1]>40000000)fail('Geçerli bir JPG, PNG veya WebP seçin (en fazla 40 megapiksel).');return $mime; }
+function upload_save(string $bytes,int $uid): string {if(strlen($bytes)>5*1024*1024)fail('Görsel en fazla 5 MB olabilir.');$mime=image_mime($bytes);$id=bin2hex(random_bytes(20));sql('INSERT INTO ph_uploads(id,user_id,mime,data) VALUES(?,?,?,?)',[$id,$uid,$mime,$bytes]);return $id;}
+function send_image(string $id): never {global $user;$image=one('SELECT * FROM ph_uploads WHERE id=?',[$id]);if(!$image)fail('Görsel bulunamadı.',404);$public=false;foreach(catalog() as $p)if(($p['active']??true)&&in_array($id,$p['images']??[],true)){$public=true;break;}$allowed=$public||($user&&($user['role']==='admin'||(int)$image['user_id']===(int)$user['id']));if(!$allowed&&$user){foreach(rows('SELECT items FROM ph_orders WHERE user_id=? AND deleted_at IS NULL',[$user['id']]) as $o)foreach(dec($o['items']) as $i)if(($i['artwork']??null)===$id){$allowed=true;break 2;}}if(!$allowed)fail('Görsele erişim yetkiniz yok.',403);header('Content-Type: '.$image['mime']);header('Cache-Control: '.($public?'public, max-age=3600':'private, no-store'));echo $image['data'];exit; }

@@ -1,0 +1,57 @@
+PLEKSİ HEDİYE — PHP 8.2 HOSTING KURULUMU
+
+Bu paketin sunucuda Node.js, npm, Composer veya SSH ihtiyacı yoktur.
+Arayüzün hazır JavaScript/CSS dosyaları paket içindedir; tüm sunucu işlemleri PHP + MySQL ile çalışır.
+
+1) Hosting panelinde PHP 8.2 veya üzerini seçin.
+   Gerekli uzantılar: PDO MySQL, mbstring, cURL, DOM, SimpleXML, fileinfo ve iconv.
+   Kurulum ekranı bunları kontrol eder.
+
+2) Hosting panelinde boş bir MySQL veritabanı oluşturun.
+   Bir veritabanı kullanıcısı oluşturup bu veritabanına tüm yetkileri verin.
+   Veritabanı adı ve kullanıcı adı cPanel hesap öneki içerebilir; tam adlarını kullanın.
+
+3) ZIP'in İÇİNDEKİ dosyaları public_html'e veya public_html/demo gibi bir klasöre çıkarın.
+   index.php, api.php, install.php, app/ ve assets/ aynı klasörde kalmalı.
+   .htaccess ve .user.ini dosyalarının da yüklendiğini kontrol edin.
+   GitHub proje ZIP'ini indirdiyseniz yalnızca hosting/ klasörünün içeriğini yükleyin.
+
+4) Tarayıcıda siteadresiniz.com/install.php veya siteadresiniz.com/demo/install.php adresini açın.
+   - Site adresini doğru girin; alt klasör varsa /demo kısmını da yazın.
+   - MySQL bilgilerinizi girin. Sunucu genellikle localhost, port genellikle 3306'dır.
+   - Yönetici telefon, isim, soyisim, il, ilçe, mahalle ve şifresini belirleyin.
+   - İsterseniz örnek ürünleri ekleyin.
+   - Kurulumu tamamlayın. SQL dosyasını ayrıca içe aktarmanız gerekmez.
+
+5) Mağazayı açın. Telefonunuz ve şifrenizle giriş yapın; Hesabım üzerinden yönetim merkezine girin.
+   İlk yönetici telefonu WhatsApp şifre destek hedefi olur.
+   Yönetim panelinden teslimat ücretlerini belirleyin (ilk kurulumda 0 TL'dir).
+   Yeni komisyoncuları panelden onaylayın. Şifre yenileme ve ürün/sipariş işlemleri paneldedir.
+
+Kurulum tamamlanınca tekrar çalıştırılamaz. İsterseniz install.php dosyasını silebilirsiniz.
+app/config.php bağlantı ayarlarını içerir; güncelleme yaparken bu dosyayı koruyun.
+Mevcut üye bulunan veritabanına yeniden kurulum yapılmaz.
+
+DOSYA İZİNLERİ
+Kurulumda app/ klasörü PHP kullanıcısı tarafından yazılabilir olmalı.
+Kurulum dosyası bunun kontrolünü yapar; 777 izni vermeniz gerekmez.
+Kurulumdan sonra kayıtlar ve görseller MySQL'de saklanır; uploads klasörü oluşturmanız gerekmez.
+
+SUNUCU
+Apache veya LiteSpeed ve mod_rewrite önerilir. Pakette .htaccess hazırdır.
+Nginx kullanıyorsanız sunucu yöneticiniz temiz ürün URL'lerini index.php'ye yönlendirmeli,
+app/ klasörüne dış erişimi engellemeli. API api.php üzerinden çalışır.
+Alt klasör ve alan adı köküne kurulum desteklenir.
+HTTPS gerçek kullanımda önerilir; HTTPS seçildiğinde oturum çerezi Secure olur.
+
+GÜNCELLEME
+PHP dosyaları ve assets/ klasörü birlikte güncellenmeli.
+app/config.php ve MySQL veritabanını koruyun; güncellemeden önce yedek alın.
+Bu ilk PHP sürümü yeni MySQL kurulumu içindir. Eski Node/SQLite verileri otomatik taşınmaz.
+Node.js scrypt şifreleri PHP şifreleriyle uyumlu değildir; gerçek eski veriler varsa ayrı geçiş gerekir.
+
+DEMO VE GERÇEK KULLANIM
+Örnek ürünler/fiyatlar tanıtım içindir. Gerçek katalog, orijinal logo, banka/firma bilgileri ve
+satış/iade/KVKK metinleri yayına geçmeden tamamlanmalıdır.
+XML örnek dosya akışı hazırdır; gerçek tedarikçi bağlantısı henüz verilmemiştir.
+Bildirimler panel açıkken 10 saniyede bir kontrol edilir; kapalı tarayıcıya push gönderilmez.

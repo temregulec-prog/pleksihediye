@@ -6,3 +6,8 @@ dist/
 
 .env.*
 !.env.example
+hosting/app/config.php
+hosting/app/install.lock
+artifacts/
+hosting/app/config.*.tmp
+hosting/app/config.*.tmp.php
