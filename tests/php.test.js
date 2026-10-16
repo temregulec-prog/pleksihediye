@@ -1,4 +1,4 @@
-import{test,before,after}from'node:test';import assert from'node:assert/strict';import{spawn,spawnSync}from'node:child_process';import{mkdtempSync,rmSync,cpSync,existsSync,mkdirSync,writeFileSync,symlinkSync}from'node:fs';import{tmpdir}from'node:os';import{join}from'node:path';import{productSlug,seoDescription,normalizePhone,dealerAmount}from'../shared.js';import{parseXml,isPublicAddress}from'../lib/xml.js';
+import{test,before,after}from'node:test';import assert from'node:assert/strict';import{spawn,spawnSync}from'node:child_process';import{mkdtempSync,rmSync,cpSync,existsSync,mkdirSync,writeFileSync,symlinkSync,readFileSync}from'node:fs';import{tmpdir}from'node:os';import{join}from'node:path';import{productSlug,seoDescription,normalizePhone,dealerAmount}from'../shared.js';import{parseXml,isPublicAddress}from'../lib/xml.js';
 const dir=mkdtempSync(join(tmpdir(),'pleksi-php-test-'));const PHP=process.env.PHP_BIN||'php';const dbName='pleksi_test_'+process.pid+'_'+Date.now();const testEnv={...process.env,PLEKSI_TEST_DATABASE:dbName};let proc;const base='http://127.0.0.1:3021';
 function dbCommand(action,payload){const r=spawnSync(PHP,['tests/php-db.php',action],{env:testEnv,input:payload?JSON.stringify(payload):undefined,encoding:'utf8'});if(r.status!==0)throw Error('PHP test database operation failed: '+r.stderr);return r.stdout?JSON.parse(r.stdout):null}
 let adminCookie,dealerCookie,otherCookie,dealerId,orderId,imageId;
@@ -244,4 +244,16 @@ test('product-specific options are validated, saved in orders and required only 
  r=await request('/orders',{cookie:dealerCookie,method:'POST',body:{items:[{id:required.id,quantity:1,personalization:'İsim',artwork:imageId}]}});assert.equal(r.status,201);
  order=(await request('/orders',{cookie:dealerCookie})).body.find(o=>o.id===r.body.id);r=await request('/orders/'+order.id,{cookie:dealerCookie,method:'PATCH',body:{version:order.version,items:[{...order.items[0],artwork:null}]}});assert.equal(r.status,400,'Required image cannot be removed during editing');
  for(const invalid of [[{name:'Renk',values:[]}],[{name:'Renk',values:['Gold','Gold']}],[{name:'Renk',values:['Gold']},{name:'Renk',values:['Gümüş']}]]){r=await request('/admin/products',{cookie:adminCookie,method:'POST',body:{...baseProduct,options:invalid}});assert.equal(r.status,400)}
+});
+
+
+test('HTTP page includes a private, correctly priced storefront without extra API calls',async()=>{
+ const configPath=join(dir,'site/app/config.php'),original=readFileSync(configPath,'utf8');
+ try{
+  writeFileSync(configPath,original.replace(/'secure_cookie' => false/,"'secure_cookie' => true").replace(base,base.replace('http:','https:')));
+  const snapshot=async cookie=>{const r=await fetch(base+'/',{headers:cookie?{Cookie:cookie}:{}});assert.equal(r.status,200);assert.match(r.headers.get('cache-control'),/private.*no-store/);assert.match(r.headers.get('vary'),/Cookie/);const html=await r.text();const match=html.match(/window\.PLEKSI_CONFIG=(.*?);<\/script>/);assert.ok(match);return JSON.parse(match[1]).storefront};
+  const anonymous=await snapshot();assert.equal(anonymous.user,null);assert.ok(anonymous.products.length>0);assert.ok(anonymous.products.every(p=>p.active!==false&&p.dealerPrice===undefined&&p.commissionPercent===undefined));assert.ok(anonymous.categories.length>0);assert.equal(anonymous.deliveryOptions[0].id,'pickup');
+  const dealer=await snapshot(adminCookie);assert.equal(dealer.user.role,'admin');assert.ok(dealer.products.every(p=>typeof p.dealerPrice==='number'));assert.equal(dealer.user.password,undefined);
+  const login=await fetch(base+'/api.php?route=/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:'05321110001',password:'Test-password-925'})});assert.equal(login.status,200);assert.doesNotMatch(login.headers.get('set-cookie'),/;\s*secure/i);const cookie=login.headers.get('set-cookie').split(';')[0];assert.equal((await request('/me',{cookie})).body.role,'admin');
+ }finally{writeFileSync(configPath,original)}
 });

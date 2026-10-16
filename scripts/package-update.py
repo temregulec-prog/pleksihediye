@@ -61,6 +61,11 @@ Urun duzenlemede Secenek ekle ile Renk, Boyut gibi secenekler tanimlanir.
 Tanimlanmayan urunlerde renk/secenek alani gosterilmez.
 Secimler sepette, sipariste ve duzenleme ekraninda saklanir ve sunucuda kontrol edilir.
 Yazi ve gorsel alanlari tum urunlerde vardir; sadece zorunlu secilenler zorunludur.
+HTTP baglantida oturum cerezleri ve site baglantilari gercek protokole gore olusur.
+Ilk urun listesi sayfanin icindedir; acilista ayri API istegi beklenmez.
+Urun yenilemesi basarisizsa mevcut liste korunur ve tekrar deneme gosterilir.
+Giris sonrasi katalog yuklemesi giris ekranini bekletmez.
+index.php, app/bootstrap.php ve app/core.php mutlaka guncellenmelidir.
 Cikis yap dugmesi de bu pakete dahildir.
 '''
 out = root / 'dagitim/pleksihediye-php82-guncelleme.zip'
