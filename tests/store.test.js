@@ -238,3 +238,20 @@ test('product-specific options are validated, saved in orders and required only 
  order=(await request('/api/orders',{cookie:dealerCookie})).body.find(o=>o.id===r.body.id);r=await request('/api/orders/'+order.id,{cookie:dealerCookie,method:'PATCH',body:{version:order.version,items:[{...order.items[0],artwork:null}]}});assert.equal(r.status,400,'Required image cannot be removed during editing');
  for(const invalid of [[{name:'Renk',values:[]}],[{name:'Renk',values:['Gold','Gold']}],[{name:'Renk',values:['Gold']},{name:'Renk',values:['Gümüş']}]]){r=await request('/api/admin/products',{cookie:adminCookie,method:'POST',body:{...baseProduct,options:invalid}});assert.equal(r.status,400)}
 });
+
+test('4000-product catalog returns bounded pages, server filters, global selection IDs and correct counts',async t=>{
+ const products=Array.from({length:4000},(_,n)=>({name:'PERF4000-'+String(n).padStart(4,'0'),description:'Örnek ürün açıklaması. '.repeat(35),category:'Performans Testi',price:300,commissionPercent:20,requireText:false,requireImage:false,images:[imageId],active:n%2===0,showOnHome:false}));
+ const fixtureDb=new DatabaseSync(join(dir,'test.sqlite'));fixtureDb.exec('BEGIN');const insert=fixtureDb.prepare('INSERT INTO products(data) VALUES(?)');for(const p of products)insert.run(JSON.stringify(p));fixtureDb.exec('COMMIT');for(const row of fixtureDb.prepare("SELECT id,data FROM products WHERE json_extract(data,'$.name') LIKE 'PERF4000-%'").all())fixtureDb.prepare('UPDATE products SET data=? WHERE id=?').run(JSON.stringify({...JSON.parse(row.data),id:row.id}),row.id);fixtureDb.close();
+ const started=performance.now();let r=await request('/api/admin/products?page=1&limit=50&q=PERF4000-',{cookie:adminCookie});const elapsed=performance.now()-started;assert.equal(r.status,200);assert.equal(r.body.total,4000);assert.equal(r.body.items.length,50);assert.equal(r.body.pages,80);assert.equal(r.body.items[0].name,'PERF4000-0000');const payload=Buffer.byteLength(JSON.stringify(r.body));assert.ok(payload<100000);t.diagnostic('4000 products: page 1 '+elapsed.toFixed(1)+' ms, 50 records, '+payload+' bytes (local test server, not live hosting)');
+ r=await request('/api/admin/products?page=2&limit=50&q=PERF4000-',{cookie:adminCookie});assert.equal(r.body.items[0].name,'PERF4000-0050');
+ r=await request('/api/admin/products?page=1&status=passive&category='+encodeURIComponent('Performans Testi'),{cookie:adminCookie});assert.equal(r.body.total,2000);assert.ok(r.body.items.every(p=>p.active===false));
+ r=await request('/api/admin/products?ids=1&status=passive&category='+encodeURIComponent('Performans Testi'),{cookie:adminCookie});assert.equal(r.body.ids.length,2000);assert.ok(r.body.ids.every(Number.isInteger));
+ r=await request('/api/admin/products?page=999&q=PERF4000-',{cookie:adminCookie});assert.equal(r.body.page,80);assert.equal(r.body.items.length,50);
+ r=await request('/api/admin/products?page=1&limit=10000&q=PERF4000-',{cookie:adminCookie});assert.equal(r.body.items.length,100);
+ r=await request('/api/admin/products?stats=1',{cookie:adminCookie});assert.ok(Number(r.body.total)>=4000);assert.ok(Number(r.body.passive)>=2000);
+ r=await request('/api/admin/categories?counts=1',{cookie:adminCookie});assert.equal(r.body.find(c=>c.name==='Performans Testi').total,4000);
+ r=await request('/api/admin/products?page=1&q='+encodeURIComponent("%' OR 1=1 --"),{cookie:adminCookie});assert.equal(r.body.total,0);
+ r=await request('/api/admin/products?page=1',{cookie:dealerCookie});assert.equal(r.status,403);
+
+ const cleanupDb=new DatabaseSync(join(dir,'test.sqlite'));cleanupDb.prepare("DELETE FROM products WHERE json_extract(data,'$.name') LIKE 'PERF4000-%'").run();cleanupDb.close();
+});

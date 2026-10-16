@@ -257,3 +257,20 @@ test('HTTP page includes a private, correctly priced storefront without extra AP
   const login=await fetch(base+'/api.php?route=/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:'05321110001',password:'Test-password-925'})});assert.equal(login.status,200);assert.doesNotMatch(login.headers.get('set-cookie'),/;\s*secure/i);const cookie=login.headers.get('set-cookie').split(';')[0];assert.equal((await request('/me',{cookie})).body.role,'admin');
  }finally{writeFileSync(configPath,original)}
 });
+
+test('4000-product catalog returns bounded pages, server filters, global selection IDs and correct counts',async t=>{
+ const products=Array.from({length:4000},(_,n)=>({name:'PERF4000-'+String(n).padStart(4,'0'),description:'Örnek ürün açıklaması. '.repeat(35),category:'Performans Testi',price:300,commissionPercent:20,requireText:false,requireImage:false,images:[imageId],active:n%2===0,showOnHome:false}));
+ dbCommand('query',{sql:'INSERT INTO ph_products(data) VALUES '+products.map(()=>'(?)').join(','),params:products.map(JSON.stringify)});dbCommand('query',{sql:"DELETE FROM ph_settings WHERE `key`='product_images_index_v1'"});
+ const started=performance.now();let r=await request('/admin/products?page=1&limit=50&q=PERF4000-',{cookie:adminCookie});const elapsed=performance.now()-started;assert.equal(r.status,200);assert.equal(r.body.total,4000);assert.equal(r.body.items.length,50);assert.equal(r.body.pages,80);assert.equal(r.body.items[0].name,'PERF4000-0000');const payload=Buffer.byteLength(JSON.stringify(r.body));assert.ok(payload<100000);t.diagnostic('4000 products: page 1 '+elapsed.toFixed(1)+' ms, 50 records, '+payload+' bytes (local test server, not live hosting)');
+ r=await request('/admin/products?page=2&limit=50&q=PERF4000-',{cookie:adminCookie});assert.equal(r.body.items[0].name,'PERF4000-0050');
+ r=await request('/admin/products?page=1&status=passive&category='+encodeURIComponent('Performans Testi'),{cookie:adminCookie});assert.equal(r.body.total,2000);assert.ok(r.body.items.every(p=>p.active===false));
+ r=await request('/admin/products?ids=1&status=passive&category='+encodeURIComponent('Performans Testi'),{cookie:adminCookie});assert.equal(r.body.ids.length,2000);assert.ok(r.body.ids.every(Number.isInteger));
+ r=await request('/admin/products?page=999&q=PERF4000-',{cookie:adminCookie});assert.equal(r.body.page,80);assert.equal(r.body.items.length,50);
+ r=await request('/admin/products?page=1&limit=10000&q=PERF4000-',{cookie:adminCookie});assert.equal(r.body.items.length,100);
+ r=await request('/admin/products?stats=1',{cookie:adminCookie});assert.ok(Number(r.body.total)>=4000);assert.ok(Number(r.body.passive)>=2000);
+ r=await request('/admin/categories?counts=1',{cookie:adminCookie});assert.equal(r.body.find(c=>c.name==='Performans Testi').total,4000);
+ r=await request('/admin/products?page=1&q='+encodeURIComponent("%' OR 1=1 --"),{cookie:adminCookie});assert.equal(r.body.total,0);
+ r=await request('/admin/products?page=1',{cookie:dealerCookie});assert.equal(r.status,403);
+ const indexed=dbCommand('query',{sql:'SELECT COUNT(*) AS n FROM ph_product_images WHERE image_id=?',params:[imageId]});assert.ok(Number(indexed[0].n)>=4000,'Upgrade backfills existing product image references');const image=await fetch(base+'/api.php?route=/uploads/'+imageId);assert.equal(image.status,200,'Indexed product image is publicly readable');const id=(await request('/admin/products?page=1&q=PERF4000-',{cookie:adminCookie})).body.items[0].id;await request('/admin/products/bulk',{cookie:adminCookie,method:'PATCH',body:{products:[{id,images:[]}]}});assert.equal(dbCommand('query',{sql:'SELECT COUNT(*) AS n FROM ph_product_images WHERE product_id=?',params:[id]})[0].n,0);
+ dbCommand('query',{sql:"DELETE FROM ph_products WHERE JSON_UNQUOTE(JSON_EXTRACT(data,'$.name')) LIKE 'PERF4000-%'"});
+});

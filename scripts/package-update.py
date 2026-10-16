@@ -66,6 +66,11 @@ Ilk urun listesi sayfanin icindedir; acilista ayri API istegi beklenmez.
 Urun yenilemesi basarisizsa mevcut liste korunur ve tekrar deneme gosterilir.
 Giris sonrasi katalog yuklemesi giris ekranini bekletmez.
 index.php, app/bootstrap.php ve app/core.php mutlaka guncellenmelidir.
+Yonetimde urunler sunucudan 50serli sayfalarla yuklenir.
+Arama, kategori/yayin filtresi ve filtredeki tum sayfalari secme vardir.
+Genel bakis yalnizca urun sayaclarini alir; katalogu tekrar indirmez.
+Gorsel erisiminde tum katalog taramasi yerine indeksli eslestirme kullanilir.
+Mevcut gorsel dizini ilk istekte otomatik hazirlanir; yeniden kurulum gerekmez.
 Cikis yap dugmesi de bu pakete dahildir.
 '''
 out = root / 'dagitim/pleksihediye-php82-guncelleme.zip'
