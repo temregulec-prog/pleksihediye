@@ -71,6 +71,9 @@ Arama, kategori/yayin filtresi ve filtredeki tum sayfalari secme vardir.
 Genel bakis yalnizca urun sayaclarini alir; katalogu tekrar indirmez.
 Gorsel erisiminde tum katalog taramasi yerine indeksli eslestirme kullanilir.
 Mevcut gorsel dizini ilk istekte otomatik hazirlanir; yeniden kurulum gerekmez.
+503 duzeltmesi: gorsel dizini/kilit destegi yoksa site ve giris acilmaya devam eder.
+Bu optimizasyon basarisizsa katalog ve gorseller alternatif sorguyla calisir.
+app/bootstrap.php ve app/core.php birlikte mutlaka guncellenmelidir.
 Cikis yap dugmesi de bu pakete dahildir.
 '''
 out = root / 'dagitim/pleksihediye-php82-guncelleme.zip'

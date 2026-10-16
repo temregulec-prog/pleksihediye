@@ -274,3 +274,20 @@ test('4000-product catalog returns bounded pages, server filters, global selecti
  const indexed=dbCommand('query',{sql:'SELECT COUNT(*) AS n FROM ph_product_images WHERE image_id=?',params:[imageId]});assert.ok(Number(indexed[0].n)>=4000,'Upgrade backfills existing product image references');const image=await fetch(base+'/api.php?route=/uploads/'+imageId);assert.equal(image.status,200,'Indexed product image is publicly readable');const id=(await request('/admin/products?page=1&q=PERF4000-',{cookie:adminCookie})).body.items[0].id;await request('/admin/products/bulk',{cookie:adminCookie,method:'PATCH',body:{products:[{id,images:[]}]}});assert.equal(dbCommand('query',{sql:'SELECT COUNT(*) AS n FROM ph_product_images WHERE product_id=?',params:[id]})[0].n,0);
  dbCommand('query',{sql:"DELETE FROM ph_products WHERE JSON_UNQUOTE(JSON_EXTRACT(data,'$.name')) LIKE 'PERF4000-%'"});
 });
+
+
+test('optional image index cannot block HTTP storefront, login, product writes or image reads',async()=>{
+ dbCommand('query',{sql:"DELETE FROM ph_settings WHERE `key` IN ('product_images_index_v1','product_images_index_retry_after')"});
+ const lock=spawn(PHP,['tests/php-db.php','hold-image-lock'],{env:testEnv,stdio:['pipe','pipe','pipe']});
+ await new Promise((resolve,reject)=>{lock.stdout.once('data',d=>String(d).includes('LOCKED')?resolve():reject(Error('Missing lock readiness')));lock.once('error',reject);lock.once('exit',()=>reject(Error('Lock process exited early')))});
+ let renamed=false;
+ try{
+  dbCommand('query',{sql:'RENAME TABLE ph_product_images TO ph_product_images_disabled'});renamed=true;
+  let r=await fetch(base+'/');assert.equal(r.status,200,'A busy index migration must never make the homepage unavailable');assert.match(await r.text(),/PLEKSI_CONFIG/);
+  r=await request('/auth/login',{method:'POST',body:{phone:'05321110001',password:'Test-password-925'}});assert.equal(r.status,200);const cookie=r.cookie;
+  r=await request('/admin/products?page=1',{cookie});assert.equal(r.status,200);assert.ok(r.body.items.length>0);
+  const p=r.body.items.find(p=>p.active&&p.images?.length);assert.ok(p,'Existing published image fixture');assert.equal((await fetch(base+'/api.php?route=/uploads/'+p.images[0])).status,200,'Published images remain accessible without the index table');
+  r=await request('/admin/products',{cookie,method:'POST',body:{name:'Fallback ürün kayıt testi',description:'',category:'Genel',price:100,commissionPercent:20,requireText:false,requireImage:false,images:[],active:true}});assert.equal(r.status,201,'Writes must not depend on the unavailable optional table');
+ }finally{if(renamed)dbCommand('query',{sql:'RENAME TABLE ph_product_images_disabled TO ph_product_images'});lock.stdin.end('release\n');await new Promise(resolve=>lock.once('exit',resolve));dbCommand('query',{sql:"DELETE FROM ph_settings WHERE `key` IN ('product_images_index_v1','product_images_index_retry_after')"});}
+ const r=await request('/admin/products?page=1',{cookie:adminCookie});assert.equal(r.status,200,'Migration can finish when the lock is available again');assert.equal(dbCommand('query',{sql:"SELECT value FROM ph_settings WHERE `key`='product_images_index_v1'"})[0].value,'ready');
+});

@@ -10,5 +10,5 @@ $config['secure_cookie']=request_is_https();
 $config['site_url']=preg_replace('~^https?://~',($config['secure_cookie']?'https':'http').'://',$config['site_url']);
 $db=new PDO('mysql:host='.$config['db_host'].';port='.$config['db_port'].';dbname='.$config['db_name'].';charset=utf8mb4',$config['db_user'],$config['db_pass'],[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC,PDO::ATTR_EMULATE_PREPARES=>false]);
 $db->exec("SET time_zone='+00:00'");
-ensure_product_image_index();
+$GLOBALS['product_image_index_ready']=ensure_product_image_index();
 $user=current_user();
